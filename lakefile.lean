@@ -7,11 +7,11 @@ package "GaloisRamification" where
     ⟨`pp.unicode.fun, true⟩ -- pretty-prints `fun a ↦ b`
   ]
   -- add any additional package configuration options here
-  version := v!"0.1.0"
 
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git"
 
+@[default_target]
 lean_lib «GaloisRamification» where
   -- add library configuration options here
 

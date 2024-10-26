@@ -14,9 +14,9 @@ set_option autoImplicit false
 
 /-!
 
-# Ramification theory in Galois extensions of number fields
+# Ramification theory in Galois extensions of Dedekind domains
 
-In this file, we discuss the ramification theory in Galois extensions of number fields, which is
+In this file, we discuss the ramification theory in Galois extensions of Dedekind domains, which is
   also called Hilbert's Ramification Theory.
 
 ## Main definitions and results
