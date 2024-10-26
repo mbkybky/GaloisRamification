@@ -1,4 +1,4 @@
-# Formalizing ramification theory in Galois extensions in LEAN 4
+# Formalizing ramification theory in Galois extensions
 
 Formalizing the ramification theory in Galois extensions of Dedekind domains, which is also called Hilbert's ramification theory.
 
