@@ -14,4 +14,5 @@ variable {A B : Type*} [CommRing A] [IsDomain A] [CommRing B] [IsDomain B] [Alge
   (K L : Type*) [Field K] [Field L] [Algebra A K] [IsFractionRing A K] [Algebra B L] [Algebra K L]
   [Algebra A L] [IsScalarTower A B L] [IsScalarTower A K L] [Normal K L]
 
-example : Normal (A ⧸ p) (B ⧸ P) := sorry
+include K L
+theorem qoutient_normal_of_isFractionRing_normal : Normal (A ⧸ p) (B ⧸ P) := sorry

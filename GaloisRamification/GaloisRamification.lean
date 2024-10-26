@@ -258,90 +258,13 @@ section
 
 variable {A B : Type*} [CommRing A] [IsIntegrallyClosed A] [CommRing B] [IsDomain B] [Algebra A B]
   [Module.Finite A B] (p : Ideal A) (P : Ideal B) [p.IsMaximal] [P.IsMaximal] [P.LiesOver p]
-  (h : ∀ σ : B ≃ₐ[A] B, map σ P = P)
-  (K L : Type*) [Field K] [Field L] [Algebra A K] [IsFractionRing A K] [Algebra B L] [Algebra K L]
-  [Algebra A L] [IsScalarTower A B L] [IsScalarTower A K L] [IsIntegralClosure B A L]
-  [FiniteDimensional K L] [hn : Normal K L]
-
-include K L
-theorem quotientAlgEquivHom_surjective' :
-    Function.Surjective (quotientAlgEquivHom p P h) := sorry/- by
-  haveI := (IsFractionRing.injective A K).isDomain
-  haveI := IsIntegralClosure.isFractionRing_of_finite_extension A K L B
-  let F := A ⧸ p
-  let E := B ⧸ P
-  have e : PowerBasis F (separableClosure F E) := Field.powerBasisOfFiniteOfSeparable F _
-  intro σ
-  have := σ.restrictNormal (separableClosure F E)
-  let β := (PowerBasis.liftEquiv e).toFun σ.restrictNormal.toAlgHom
-  rcases Quotient.exists_rep e.gen with ⟨a, ha⟩
-  let f : A[X] := minpoly A a
-  let fl : B[X] := f.map (algebraMap A B)
-  let ϕp : A →+* F := Ideal.Quotient.mk p
-  let ϕP : B →+* E := Ideal.Quotient.mk P
-  have hq : ⟦a⟧ = ϕP a := rfl
-  rw [hq] at ha
-  have hai : IsIntegral A a := IsIntegral.isIntegral a
-  have hm : f.Monic := minpoly.monic hai
-  have h0 : (fl.map ϕP) ≠ 0 := map_monic_ne_zero (Monic.map (algebraMap A B) hm)
-  have hbr : β.1 ∈ (fl.map ϕP).roots := by
-    have h : aeval e.gen (f.map ϕp) = ϕP (aeval a f) := by
-      rw [← ha]
-      exact (@map_aeval_eq_aeval_map _ _ _ F E _ _ _ _ _ ϕp ϕP rfl f a).symm
-    rw [minpoly.aeval, map_zero] at h
-    apply (mem_roots_iff_aeval_eq_zero h0).mpr
-    have hc : fl.map ϕP = (f.map ϕp).map (algebraMap F E) := by
-      rw [Polynomial.map_map, Polynomial.map_map]
-      rfl
-    have hbz := aeval_eq_zero_of_dvd_aeval_eq_zero (minpoly.dvd F e.gen h) β.2
-    simp only [Equiv.toFun_as_coe, AlgEquiv.toAlgHom_eq_coe, PowerBasis.liftEquiv_apply_coe,
-      AlgHom.coe_coe, hc, aeval_map_algebraMap, ← hbz]
-  have hfe : (Polynomial.map (algebraMap A K) f) = minpoly K (algebraMap B L a) := by
-    refine minpoly.eq_of_irreducible_of_monic
-      ((Monic.irreducible_iff_irreducible_map_fraction_map (minpoly.monic hai)).mp
-        (minpoly.irreducible hai)) ?_ (Monic.map (algebraMap A K) (minpoly.monic hai))
-    simp only [aeval_map_algebraMap, aeval_algebraMap_eq_zero_iff, minpoly.aeval, f]
-  have h : fl.roots.map ϕP = (fl.map ϕP).roots := by
-    have h := (natDegree_eq_card_roots' (hn.splits (algebraMap B L a))).symm
-    rw [← hfe, natDegree_map, Monic.natDegree_map (minpoly.monic hai), Polynomial.map_map,
-      ← IsScalarTower.algebraMap_eq A K L,
-      ← isIntegralClosure_root_card_eq_ofMonic B L (minpoly.monic hai),
-      ← Monic.natDegree_map (minpoly.monic hai) (algebraMap A B)] at h
-    exact roots_map_of_card_eq_natDegree h0 h
-  rw [← h] at hbr
-  rcases Multiset.mem_map.mp hbr with ⟨b, ⟨hbr, hb⟩⟩
-  have h : aeval (algebraMap B L b) (minpoly K (AdjoinSimple.gen K (algebraMap B L a))) = 0 := by
-    have he : minpoly K (AdjoinSimple.gen K (algebraMap B L a)) = minpoly K (algebraMap B L a) :=
-      minpoly_eq (AdjoinSimple.gen K ((algebraMap B L) a))
-    rw [he, ← hfe, aeval_map_algebraMap, aeval_algebraMap_eq_zero_iff, aeval_def, ← eval_map,
-      ← coe_aeval_eq_eval, (mem_roots_iff_aeval_eq_zero (map_monic_ne_zero hm)).mp hbr]
-  let ε := IntermediateField.adjoin.powerBasis (hn.isIntegral (algebraMap B L a))
-  let τ : L ≃ₐ[K] L := (ε.lift (algebraMap B L b) h).fieldRangeAlgEquiv.liftNormal L
-  use galRestrict A K L B τ
-  refine AlgEquiv.coe_algHom_injective (e.liftEquiv.injective ?_)
-  apply Subtype.val_inj.mp
-  rw [e.liftEquiv_apply_coe, AlgHom.coe_coe]
-  simp only [← ha, Equiv.toFun_as_coe, AlgEquiv.toAlgHom_eq_coe, AlgHom.coe_coe]
-  show ϕP ((galRestrict A K L B τ) a) = β.1
-  rw [← hb]
-  exact congrArg ϕP <| NoZeroSMulDivisors.algebraMap_injective B L <|
-    (algebraMap_galRestrict_apply A τ a).trans <|
-      ((ε.lift (algebraMap B L b) h).fieldRangeAlgEquiv.liftNormal_commutes L
-        (AdjoinSimple.gen K (algebraMap B L a))).trans (ε.lift_gen (algebraMap B L b) h) -/
-
-end
-
-section
-
-variable {A B : Type*} [CommRing A] [IsIntegrallyClosed A] [CommRing B] [IsDomain B] [Algebra A B]
-  [Module.Finite A B] (p : Ideal A) (P : Ideal B) [p.IsMaximal] [P.IsMaximal] [P.LiesOver p]
   (h : ∀ σ : B ≃ₐ[A] B, map σ P = P) [Algebra.IsSeparable (A ⧸ p) (B ⧸ P)]
   (K L : Type*) [Field K] [Field L] [Algebra A K] [IsFractionRing A K] [Algebra B L] [Algebra K L]
   [Algebra A L] [IsScalarTower A B L] [IsScalarTower A K L] [IsIntegralClosure B A L]
   [FiniteDimensional K L] [hn : Normal K L]
 
 include K L
-theorem quotientAlgEquivHom_surjective :
+theorem quotientAlgEquivHom_surjective' :
     Function.Surjective (quotientAlgEquivHom p P h) := by
   haveI := (IsFractionRing.injective A K).isDomain
   haveI := IsIntegralClosure.isFractionRing_of_finite_extension A K L B
@@ -404,6 +327,86 @@ theorem quotientAlgEquivHom_surjective :
     (algebraMap_galRestrict_apply A τ a).trans <|
       ((ε.lift (algebraMap B L b) h).fieldRangeAlgEquiv.liftNormal_commutes L
         (AdjoinSimple.gen K (algebraMap B L a))).trans (ε.lift_gen (algebraMap B L b) h)
+
+end
+
+section
+
+variable {A B : Type*} [CommRing A] [IsIntegrallyClosed A] [CommRing B] [IsDomain B] [Algebra A B]
+  [Module.Finite A B] (p : Ideal A) (P : Ideal B) [p.IsMaximal] [P.IsMaximal] [P.LiesOver p]
+  (h : ∀ σ : B ≃ₐ[A] B, map σ P = P)
+  (K L : Type*) [Field K] [Field L] [Algebra A K] [IsFractionRing A K] [Algebra B L] [Algebra K L]
+  [Algebra A L] [IsScalarTower A B L] [IsScalarTower A K L] [IsIntegralClosure B A L]
+  [FiniteDimensional K L] [hn : Normal K L]
+
+include K L
+theorem quotientAlgEquivHom_surjective :
+    Function.Surjective (quotientAlgEquivHom p P h) := by
+  haveI := (IsFractionRing.injective A K).isDomain
+  haveI := IsIntegralClosure.isFractionRing_of_finite_extension A K L B
+  let F := A ⧸ p
+  let E := B ⧸ P
+  haveI : Normal F E := qoutient_normal_of_isFractionRing_normal p P K L
+  have e : PowerBasis F (separableClosure F E) := Field.powerBasisOfFiniteOfSeparable F _
+  intro σ
+  have := σ.restrictNormal (separableClosure F E)
+  let β := (PowerBasis.liftEquiv e).toFun (σ.restrictNormal (separableClosure F E)).toAlgHom
+  rcases Quotient.exists_rep e.gen.1 with ⟨a, ha⟩
+  let f : A[X] := minpoly A a
+  let fl : B[X] := f.map (algebraMap A B)
+  let ϕp : A →+* F := Ideal.Quotient.mk p
+  let ϕP : B →+* E := Ideal.Quotient.mk P
+  have hq : ⟦a⟧ = ϕP a := rfl
+  rw [hq] at ha
+  have hai : IsIntegral A a := IsIntegral.isIntegral a
+  have hm : f.Monic := minpoly.monic hai
+  have h0 : (fl.map ϕP) ≠ 0 := map_monic_ne_zero (Monic.map (algebraMap A B) hm)
+  sorry/- have hbr : β.1.1 ∈ (fl.map ϕP).roots := by
+    have h : aeval e.gen.1 (f.map ϕp) = ϕP (aeval a f) := by
+      rw [← ha]
+      exact (@map_aeval_eq_aeval_map _ _ _ F E _ _ _ _ _ ϕp ϕP rfl f a).symm
+    rw [minpoly.aeval, map_zero] at h
+    apply (mem_roots_iff_aeval_eq_zero h0).mpr
+    have hc : fl.map ϕP = (f.map ϕp).map (algebraMap F E) := by
+      rw [Polynomial.map_map, Polynomial.map_map]
+      rfl
+    have hbz := aeval_eq_zero_of_dvd_aeval_eq_zero (minpoly.dvd F e.gen h) β.2
+    simp only [Equiv.toFun_as_coe, AlgEquiv.toAlgHom_eq_coe, PowerBasis.liftEquiv_apply_coe,
+      AlgHom.coe_coe, hc, aeval_map_algebraMap, ← hbz]
+  have hfe : (Polynomial.map (algebraMap A K) f) = minpoly K (algebraMap B L a) := by
+    refine minpoly.eq_of_irreducible_of_monic
+      ((Monic.irreducible_iff_irreducible_map_fraction_map (minpoly.monic hai)).mp
+        (minpoly.irreducible hai)) ?_ (Monic.map (algebraMap A K) (minpoly.monic hai))
+    simp only [aeval_map_algebraMap, aeval_algebraMap_eq_zero_iff, minpoly.aeval, f]
+  have h : fl.roots.map ϕP = (fl.map ϕP).roots := by
+    have h := (natDegree_eq_card_roots' (hn.splits (algebraMap B L a))).symm
+    rw [← hfe, natDegree_map, Monic.natDegree_map (minpoly.monic hai), Polynomial.map_map,
+      ← IsScalarTower.algebraMap_eq A K L,
+      ← isIntegralClosure_root_card_eq_ofMonic B L (minpoly.monic hai),
+      ← Monic.natDegree_map (minpoly.monic hai) (algebraMap A B)] at h
+    exact roots_map_of_card_eq_natDegree h0 h
+  rw [← h] at hbr
+  rcases Multiset.mem_map.mp hbr with ⟨b, ⟨hbr, hb⟩⟩
+  have h : aeval (algebraMap B L b) (minpoly K (AdjoinSimple.gen K (algebraMap B L a))) = 0 := by
+    have he : minpoly K (AdjoinSimple.gen K (algebraMap B L a)) = minpoly K (algebraMap B L a) :=
+      minpoly_eq (AdjoinSimple.gen K ((algebraMap B L) a))
+    rw [he, ← hfe, aeval_map_algebraMap, aeval_algebraMap_eq_zero_iff, aeval_def, ← eval_map,
+      ← coe_aeval_eq_eval, (mem_roots_iff_aeval_eq_zero (map_monic_ne_zero hm)).mp hbr]
+  let ε := IntermediateField.adjoin.powerBasis (hn.isIntegral (algebraMap B L a))
+  let τ : L ≃ₐ[K] L := (ε.lift (algebraMap B L b) h).fieldRangeAlgEquiv.liftNormal L
+  use galRestrict A K L B τ
+  refine AlgEquiv.coe_algHom_injective ?_
+  have := e.liftEquiv.injective
+  refine (e.liftEquiv.injective ?_)
+  apply Subtype.val_inj.mp
+  rw [e.liftEquiv_apply_coe, AlgHom.coe_coe]
+  simp only [← ha, Equiv.toFun_as_coe, AlgEquiv.toAlgHom_eq_coe, AlgHom.coe_coe]
+  show ϕP ((galRestrict A K L B τ) a) = β.1
+  rw [← hb]
+  exact congrArg ϕP <| NoZeroSMulDivisors.algebraMap_injective B L <|
+    (algebraMap_galRestrict_apply A τ a).trans <|
+      ((ε.lift (algebraMap B L b) h).fieldRangeAlgEquiv.liftNormal_commutes L
+        (AdjoinSimple.gen K (algebraMap B L a))).trans (ε.lift_gen (algebraMap B L b) h) -/
 
 end
 
