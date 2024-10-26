@@ -115,13 +115,11 @@ theorem mem_map_of_equiv {R S E : Type*} [Semiring R] [Semiring S] (I : Ideal R)
   · rintro ⟨x, hx, rfl⟩
     exact mem_map_of_mem e hx
 
-#check Ideal.map_comap_of_equiv
-
 end Ideal
 
 end lie_over
 
-section
+section transitive
 
 /-! ### Galois group `Gal(K/L)` acts transitively on the set of all maximal ideals -/
 
@@ -153,7 +151,23 @@ theorem isMaximal_conjugates_of_isGalois (Q : Ideal B) [hqm : Q.IsMaximal] [Q.Li
   rw [hxy] at h
   exact IsMaximal.ne_top inferInstance ((eq_top_iff_one _).mpr h)
 
-end
+end transitive
+
+section RamificationInertia
+
+open scoped Classical in
+noncomputable def Ideal.ramificationIdxIn {R : Type*} [CommRing R] (p : Ideal R)
+    (S : Type*) [CommRing S] [Algebra R S] : ℕ :=
+  if h : ∃ P : Ideal S, P.LiesOver p then
+    Ideal.ramificationIdx (algebraMap R S) p h.choose else 0
+
+open scoped Classical in
+noncomputable def Ideal.inertiaDegIn {R : Type*} [CommRing R] (p : Ideal R) [p.IsMaximal]
+    (S : Type*) [CommRing S] [Algebra R S] : ℕ :=
+  if h : ∃ P : Ideal S, P.LiesOver p then
+    Ideal.inertiaDeg (algebraMap R S) p h.choose else 0
+
+end RamificationInertia
 
 section
 
