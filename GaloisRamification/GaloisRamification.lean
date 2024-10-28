@@ -89,34 +89,6 @@ theorem prime_iff_isMaximal {p : Ideal A} (hp0 : p ≠ ⊥) : Prime p ↔ p.IsMa
   ⟨fun hp ↦ (isPrime_of_prime hp).isMaximal hp.ne_zero,
     fun hp ↦ prime_of_isPrime hp0 hp.isPrime⟩
 
-namespace Ideal
--- lemmas of isomorphisms act on ideals
-/-- A ring isomorphism sends a prime ideal to a prime ideal. -/
-instance {R S E : Type*} [CommRing R] [CommRing S] (p : Ideal R) [p.IsPrime] [EquivLike E R S]
-    [RingEquivClass E R S] (e : E) : (map e p).IsPrime := by
-  exact map_isPrime_of_equiv e
-
-/-- A ring isomorphism sends a maximal ideal to a maximal ideal. -/
-instance map_isMaximal_of_equiv {R S E : Type*} [Ring R] [Ring S] (p : Ideal R)
-    [hp : p.IsMaximal] [EquivLike E R S] [RingEquivClass E R S] (e : E) : (map e p).IsMaximal :=
-  map.isMaximal e (EquivLike.bijective e) hp
-
-/-- A maximal ideal pull back by a ring isomorphism is a maximal ideal. -/
-instance comap_isMaximal_of_equiv {R S E : Type*} [Ring R] [Ring S] (p : Ideal S)
-    [p.IsMaximal] [EquivLike E R S] [RingEquivClass E R S] (e : E) : (comap e p).IsMaximal :=
-  comap_isMaximal_of_surjective e (EquivLike.surjective e)
-
-theorem mem_map_of_equiv {R S E : Type*} [Semiring R] [Semiring S] (I : Ideal R)
-    [EquivLike E R S] [RingEquivClass E R S] (e : E) (y : S) : y ∈ map e I ↔ ∃ x ∈ I, e x = y := by
-  constructor
-  · intro h
-    simp_rw [show map e I = _ from map_comap_of_equiv I (e : R ≃+* S)] at h
-    exact ⟨(e : R ≃+* S).symm y, h, RingEquiv.apply_symm_apply (e : R ≃+* S) y⟩
-  · rintro ⟨x, hx, rfl⟩
-    exact mem_map_of_mem e hx
-
-end Ideal
-
 end lie_over
 
 section transitive
