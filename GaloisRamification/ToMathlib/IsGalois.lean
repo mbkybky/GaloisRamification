@@ -1,11 +1,14 @@
 /-
 Copyright (c) 2024 Yongle Hu. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yongle Hu
+Authors: Yongle Hu, Zixun Guo
 -/
 import Mathlib.FieldTheory.Galois.Basic
 
 attribute [local instance] FractionRing.liftAlgebra
+
+
+
 
 variable (A K L B : Type*)
   [CommRing A] [IsDomain A] [CommRing B] [IsDomain B] [Algebra A B] [NoZeroSMulDivisors A B]
