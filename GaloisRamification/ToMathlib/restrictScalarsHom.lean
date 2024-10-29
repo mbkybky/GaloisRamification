@@ -36,7 +36,7 @@ theorem reverse_map_uniqueness {F S : Type*}
 [Algebra F S]
 (h : Module.finrank F S = 1)
 (w: S) {y: F}
-(h1: y • 1 = w): y = (reverse_map_if_rank_eq_one h).1 w := by
+(h1: y • 1 = w) : y = (reverse_map_if_rank_eq_one h).1 w := by
   have h2 := (reverse_map_if_rank_eq_one h).2 w
   rw [<-h2] at h1
   apply_fun (fun x => x • (1: S))
@@ -84,7 +84,7 @@ theorem reverse_hom_smul_one_eq_self {F S : Type*}
 [Field F] [CommRing S] [Nontrivial S]
 [Algebra F S]
 (h : Module.finrank F S = 1)
-(w: S): (reverse_hom_if_rank_eq_one h w) • 1 = w :=(reverse_map_if_rank_eq_one h).2 w
+(w: S) : (reverse_hom_if_rank_eq_one h w) • 1 = w :=(reverse_map_if_rank_eq_one h).2 w
 
 /-- the reverse homomorphism is an algebra homomorphism
 -/
@@ -125,7 +125,7 @@ noncomputable def reverse_algebra_if_rank_eq_one {F S : Type*}
     rw [add_smul]
     repeat rw [reverse_hom_smul_one_eq_self]
 
-noncomputable def reverse_algebra_is_scalar_tower {F S A : Type*}
+noncomputable def reverse_algebra_is_scalar_tower {F S : Type*} (A : Type*)
 [Semiring A]
 [Field F] [CommRing S] [Nontrivial S]
 [Algebra S A] [Algebra F A][Algebra F S]
@@ -148,7 +148,7 @@ noncomputable def reverse_algebra_is_scalar_tower {F S A : Type*}
 
 
 
-noncomputable def aut_equiv_of_finrank_eq_one {F S A : Type*}
+noncomputable def aut_equiv_of_finrank_eq_one {F S : Type*} (A : Type*)
 [Semiring A]
 [Field F] [CommRing S] [Nontrivial S]
 [Algebra S A] [Algebra F A][Algebra F S]
@@ -156,7 +156,7 @@ noncomputable def aut_equiv_of_finrank_eq_one {F S A : Type*}
 (h : Module.finrank F S = 1)
 : (A ≃ₐ[S] A) ≃* (A ≃ₐ[F] A) where
   toFun := AlgEquiv.restrictScalarsHom F S A
-  invFun := @AlgEquiv.restrictScalarsHom S F A _ _ _ (reverse_algebra_if_rank_eq_one h) _ _ (reverse_algebra_is_scalar_tower h)
+  invFun := @AlgEquiv.restrictScalarsHom S F A _ _ _ (reverse_algebra_if_rank_eq_one h) _ _ (reverse_algebra_is_scalar_tower A h)
   left_inv := by
     intro x
     apply AlgEquiv.ext
