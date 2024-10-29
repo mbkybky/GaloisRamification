@@ -108,7 +108,7 @@ end
 
 /- Galois extension is transfered between two pairs of fraction rings
 -/
-theorem IsGalois.of_isGalois_isfractionRing
+theorem IsGalois.of_isGalois_isFractionRing
   (A B K L K' L' : Type*)
   [CommRing A] [IsDomain A] [CommRing B] [IsDomain B] [Algebra A B] [NoZeroSMulDivisors A B]
   [Field K] [Field L]
