@@ -151,7 +151,7 @@ theorem IsGalois.isFractionRing_of_isGalois_fractionRing
   [Algebra K L] [Algebra A L]
   [IsScalarTower A B L] [IsScalarTower A K L]
   [IsGalois (FractionRing A) (FractionRing B)]
-  : IsGalois K L := IsGalois.of_isGalois_isfractionRing A B (FractionRing A) (FractionRing B) K L
+  : IsGalois K L := IsGalois.of_isGalois_isFractionRing A B (FractionRing A) (FractionRing B) K L
 
 
 theorem IsGalois.fractionRing_of_isGalois_isFractionRing
@@ -163,4 +163,4 @@ theorem IsGalois.fractionRing_of_isGalois_isFractionRing
   [Algebra K L] [Algebra A L]
   [IsScalarTower A B L] [IsScalarTower A K L]
   [IsGalois K L]
-  : IsGalois (FractionRing A) (FractionRing B) := IsGalois.of_isGalois_isfractionRing A B K L (FractionRing A) (FractionRing B)
+  : IsGalois (FractionRing A) (FractionRing B) := IsGalois.of_isGalois_isFractionRing A B K L (FractionRing A) (FractionRing B)
