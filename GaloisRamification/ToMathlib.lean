@@ -9,6 +9,7 @@ import Mathlib.RingTheory.Valuation.ValuationRing
 
 import GaloisRamification.ToMathlib.Finite
 import GaloisRamification.ToMathlib.FractionRing
+import GaloisRamification.ToMathlib.IsGalois
 import GaloisRamification.ToMathlib.Normal
 import GaloisRamification.ToMathlib.restrictScalarsHom
 import GaloisRamification.ToMathlib.separableClosure
