@@ -142,7 +142,7 @@ theorem IsGalois.of_isGalois_isFractionRing
       exact @IsGalois.tower_top_of_isGalois K K' L' _ _ _ _ _ _ _KK'L' _
 
 
-theorem IsGalois.isFractionRing_of_isGalois_FractionRing
+theorem IsGalois.isFractionRing_of_isGalois_fractionRing
 (A B K L : Type*)
   [CommRing A] [IsDomain A] [CommRing B] [IsDomain B] [Algebra A B] [NoZeroSMulDivisors A B]
   [Field K] [Field L]
