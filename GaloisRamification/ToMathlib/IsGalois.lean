@@ -154,7 +154,7 @@ theorem IsGalois.isFractionRing_of_isGalois_FractionRing
   : IsGalois K L := IsGalois.of_isGalois_isfractionRing A B (FractionRing A) (FractionRing B) K L
 
 
-theorem IsGalois.FractionRing_of_isGalois_isFractionRing
+theorem IsGalois.fractionRing_of_isGalois_isFractionRing
 (A B K L : Type*)
   [CommRing A] [IsDomain A] [CommRing B] [IsDomain B] [Algebra A B] [NoZeroSMulDivisors A B]
   [Field K] [Field L]
