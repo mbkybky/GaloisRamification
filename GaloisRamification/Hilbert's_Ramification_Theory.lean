@@ -236,7 +236,7 @@ instance : P.LiesOver p where over := hp.over
 
 theorem inertiaDeg_pos {K L : Type*} [Field K] [NumberField K] [Field L] [NumberField L]
     [Algebra K L] (p : Ideal (𝓞 K)) (P : Ideal (𝓞 L)) [p.IsMaximal] [P.IsMaximal]
-    [P lies_over p] : inertiaDeg (algebraMap (𝓞 K) (𝓞 L)) p P > 0 := by
+    [P lies_over p] : 0 < inertiaDeg (algebraMap (𝓞 K) (𝓞 L)) p P := by
   rw [inertiaDeg_algebraMap]
   exact Module.finrank_pos
 
@@ -456,7 +456,7 @@ theorem ramificationIdx_mul_inertiaDeg_of_isGalois (L : Type*) [Field L] [Number
     Finset.card (primes_over p L) * (ramificationIdx_of_isGalois p L * inertiaDeg_of_isGalois p L) =
     Module.finrank K L := by
   rw [← smul_eq_mul, ← Finset.sum_const]
-  rw [← sum_ramification_inertia (R := 𝓞 K) (S := 𝓞 L) p K L (ne_bot_ofIsMaximal p)]
+  rw [← sum_ramification_inertia (S := 𝓞 L) p K L (ne_bot_ofIsMaximal p)]
   apply Finset.sum_congr rfl
   intro P hp
   letI := ((primes_over_mem p P).mp hp).1
@@ -615,7 +615,7 @@ theorem inertiaDeg_of_decompositionideal_over_bot_eq_one [IsGalois K L] : inerti
   rw [inertiaDeg_eq_inertiaDeg_of_isGalois (idealUnder (decompositionField p P) P) P,
     inertiaDeg_of_decompositionIdeal p P, ← inertiaDeg_eq_inertiaDeg_of_isGalois p P] at h
   nth_rw 1 [← one_mul (inertiaDeg (algebraMap (𝓞 K) (𝓞 L)) p P)] at h
-  exact mul_right_cancel₀ (ne_of_gt (inertiaDeg_pos p P)) h.symm
+  exact mul_right_cancel₀ (inertiaDeg_pos p P).ne.symm h.symm
 
 
 
