@@ -74,15 +74,6 @@ instance lies_over_of_over_isMaximal : (p.over_isMaximal B).LiesOver p where
 
 attribute [irreducible] over_isMaximal
 
-theorem ramificationIdx_map_eq {R : Type*} [CommRing R] {S : Type*} [CommRing S] (p : Ideal R)
-  {S₁ : Type*} [CommRing S₁] [Algebra R S₁] [Algebra R S] {E : Type*} [EquivLike E S S₁] [AlgEquivClass E R S S₁]
-  (P : Ideal S) (e : E) : ramificationIdx (algebraMap R S₁) p (map e P) = ramificationIdx (algebraMap R S) p P := sorry
-
-theorem inertiaDeg_map_eq {R : Type*} [CommRing R] {S : Type*} [CommRing S] (p : Ideal R)
-  {S₁ : Type*} [CommRing S₁] [Algebra R S₁] [p.IsMaximal] [Algebra R S] (P : Ideal S) {E : Type*}
-  [EquivLike E S S₁] [AlgEquivClass E R S S₁] (e : E) :
-  inertiaDeg (algebraMap R S₁) p (map e P) = inertiaDeg (algebraMap R S) p P := sorry
-
 theorem ne_bot_of_liesOver_ne_bot {A : Type*} [CommRing A] {p : Ideal A} (hp : p ≠ ⊥) {B : Type*}
     [CommRing B] [Nontrivial B] [Algebra A B] [NoZeroSMulDivisors A B]
     (P : Ideal B) [P.LiesOver p] : P ≠ ⊥ := by
@@ -278,7 +269,7 @@ theorem ncard_primesOver_mul_ramificationIdxIn_mul_inertiaDegIn [p.IsMaximal] [I
   by_cases hpb : p = ⊥
   · sorry
   rw [← smul_eq_mul, ← coe_primesOverFinset hpb B, Set.ncard_coe_Finset, ← Finset.sum_const]
-  rw [← sum_ramification_inertia p (S := B) K L hpb]
+  rw [← sum_ramification_inertia B p K L hpb]
   apply Finset.sum_congr rfl
   intro P hp
   rw [← Finset.mem_coe, coe_primesOverFinset hpb B] at hp
@@ -322,21 +313,10 @@ namespace Ideal
 
 variable {A B : Type*} [CommRing A] [CommRing B] [Algebra A B]
 
-/-- The algebra equiv `(B ⧸ P) ≃ₐ[A ⧸ p] (B ⧸ map (mapRingHom σ) P)`
-  induced by an algebra equiv `σ : L ≃ₐ[K] L`. -/
-def quotientAlgEquiv {p : Ideal A} {P : Ideal B} [P.LiesOver p]
-    {Q : Ideal B} [Q.LiesOver p] (σ : B ≃ₐ[A] B) (hs : map σ P = Q) :
-    (B ⧸ P) ≃ₐ[A ⧸ p] (B ⧸ Q) := {
-  quotientEquiv P Q σ (by rw [← hs]; rfl) with
-  commutes' := by
-    rintro ⟨x⟩
-    exact congrArg (Ideal.Quotient.mk Q) (AlgEquiv.commutes σ x)
-}
-
 /-- `MonoidHom` version of `Ideal.quotientAlgEquiv`. -/
 def quotientAlgEquivHom (p : Ideal A) (P : Ideal B) [P.LiesOver p]
-    (h : ∀ σ : B ≃ₐ[A] B, map σ P = P) : (B ≃ₐ[A] B) →* ((B ⧸ P) ≃ₐ[A ⧸ p] (B ⧸ P)) where
-  toFun σ := quotientAlgEquiv σ (h σ)
+    (h : ∀ σ : B ≃ₐ[A] B, P = map σ P) : (B ≃ₐ[A] B) →* ((B ⧸ P) ≃ₐ[A ⧸ p] (B ⧸ P)) where
+  toFun σ := Quotient.algEquivOfEqMap p σ (h σ)
   map_one' := by ext ⟨⟩; rfl
   map_mul' _ _ := by ext ⟨⟩; rfl
 
@@ -346,7 +326,7 @@ section
 
 variable {A B : Type*} [CommRing A] [IsIntegrallyClosed A] [CommRing B] [IsDomain B] [Algebra A B]
   [Module.Finite A B] (p : Ideal A) (P : Ideal B) [p.IsMaximal] [P.IsMaximal] [P.LiesOver p]
-  (h : ∀ σ : B ≃ₐ[A] B, map σ P = P)
+  (h : ∀ σ : B ≃ₐ[A] B, P = map σ P)
   (K L : Type*) [Field K] [Field L] [Algebra A K] [IsFractionRing A K] [Algebra B L] [Algebra K L]
   [Algebra A L] [IsScalarTower A B L] [IsScalarTower A K L] [IsIntegralClosure B A L]
   [FiniteDimensional K L] [hn : Normal K L]
