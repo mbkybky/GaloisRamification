@@ -74,13 +74,23 @@ instance lies_over_of_over_isMaximal : (p.over_isMaximal B).LiesOver p where
 
 attribute [irreducible] over_isMaximal
 
-theorem ne_bot_of_liesOver_ne_bot {A : Type*} [CommRing A] {p : Ideal A} (hp : p ≠ ⊥) {B : Type*}
-    [CommRing B] [Nontrivial B] [Algebra A B] [NoZeroSMulDivisors A B]
+variable (A : Type*) [CommRing A] (p : Ideal A) [p.IsMaximal] (B : Type*) [Ring B] [Nontrivial B]
+  [Algebra A B] [NoZeroSMulDivisors A B]
+
+@[simp]
+theorem under_bot : under A (⊥ : Ideal B) = ⊥ :=
+  comap_bot_of_injective (algebraMap A B) (NoZeroSMulDivisors.algebraMap_injective A B)
+
+instance bot_liesOber_bot : (⊥ : Ideal B).LiesOver (⊥ : Ideal A) where
+  over := (under_bot A B).symm
+
+theorem ne_bot_of_liesOver_of_ne_bot {A : Type*} [CommRing A] {p : Ideal A} (hp : p ≠ ⊥) {B : Type*}
+    [Ring B] [Nontrivial B] [Algebra A B] [NoZeroSMulDivisors A B]
     (P : Ideal B) [P.LiesOver p] : P ≠ ⊥ := by
   contrapose! hp
   apply (over_def P p).trans
   rw [hp]
-  exact Ideal.comap_bot_of_injective _ (NoZeroSMulDivisors.algebraMap_injective A B)
+  exact under_bot A B
 
 end Ideal
 
@@ -147,7 +157,7 @@ theorem coe_primesOverFinset : primesOverFinset p B = primesOver p B := by
     rw [primesOverFinset, Finset.mem_coe, Multiset.mem_toFinset]
     have hd := dvd_iff_le.mpr (map_le_of_le_comap (le_of_eq hp.over))
     have hir : Irreducible P := irreducible_iff_prime.mpr <|
-      (prime_iff_isMaximal (ne_bot_of_liesOver_ne_bot hpb P)).mpr hpm
+      (prime_iff_isMaximal (ne_bot_of_liesOver_of_ne_bot hpb P)).mpr hpm
     have : map (algebraMap A B) p ≠ ⊥ :=
       (map_eq_bot_iff_of_injective (NoZeroSMulDivisors.algebraMap_injective A B)).mp.mt hpb
     rcases exists_mem_factors_of_dvd this hir hd with ⟨_, hq, he⟩
@@ -222,7 +232,7 @@ noncomputable def ramificationIdxIn {A : Type*} [CommRing A] (p : Ideal A)
 open scoped Classical in
 /-- In the case of Galois extension, it can be seen from the Theorem `inertiaDeg_eq_of_IsGalois`
   that all `inertiaDeg` are the same, which we define as the `Ideal.inertiaDegIn`. -/
-noncomputable def inertiaDegIn {A : Type*} [CommRing A] (p : Ideal A) [p.IsMaximal]
+noncomputable def inertiaDegIn {A : Type*} [CommRing A] (p : Ideal A)
     (B : Type*) [CommRing B] [Algebra A B] : ℕ :=
   if h : ∃ P : Ideal B, P.IsMaximal ∧ P.LiesOver p then
     Ideal.inertiaDeg (algebraMap A B) p h.choose else 0
@@ -267,15 +277,21 @@ theorem ncard_primesOver_mul_ramificationIdxIn_mul_inertiaDegIn [p.IsMaximal] [I
     (primesOver p B).ncard * (ramificationIdxIn p B * inertiaDegIn p B) =
     Module.finrank K L := by
   by_cases hpb : p = ⊥
-  · sorry
-  rw [← smul_eq_mul, ← coe_primesOverFinset hpb B, Set.ncard_coe_Finset, ← Finset.sum_const]
-  rw [← sum_ramification_inertia B p K L hpb]
-  apply Finset.sum_congr rfl
-  intro P hp
-  rw [← Finset.mem_coe, coe_primesOverFinset hpb B] at hp
-  haveI : P.IsMaximal := hp.1
-  haveI : P.LiesOver p := hp.2
-  rw [ramificationIdxIn_eq_ramificationIdx p P K L, inertiaDegIn_eq_inertiaDeg p P K L]
+  · simp_rw [hpb] at *
+    haveI : (⊥ : Ideal B).IsPrime := bot_prime
+    haveI : (⊥ : Ideal B).IsMaximal := IsMaximal.of_liesOver_isMaximal (⊥ : Ideal B) (⊥ : Ideal A)
+    rw [ramificationIdxIn_eq_ramificationIdx (⊥ : Ideal A) (⊥ : Ideal B) K L,
+      inertiaDegIn_eq_inertiaDeg (⊥ : Ideal A) (⊥ : Ideal B) K L]
+    simp only [ramificationIdx_bot, inertiaDeg_algebraMap, zero_mul, mul_zero]
+    sorry
+  · rw [← smul_eq_mul, ← coe_primesOverFinset hpb B, Set.ncard_coe_Finset, ← Finset.sum_const]
+    rw [← sum_ramification_inertia B p K L hpb]
+    apply Finset.sum_congr rfl
+    intro P hp
+    rw [← Finset.mem_coe, coe_primesOverFinset hpb B] at hp
+    haveI : P.IsMaximal := hp.1
+    haveI : P.LiesOver p := hp.2
+    rw [ramificationIdxIn_eq_ramificationIdx p P K L, inertiaDegIn_eq_inertiaDeg p P K L]
 
 end fundamental_identity
 
