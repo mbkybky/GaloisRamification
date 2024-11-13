@@ -119,16 +119,20 @@ section primesOver
 variable {A : Type*} [CommSemiring A] (p : Ideal A) (B : Type*) [Semiring B] [Algebra A B]
 
 def primesOver : Set (Ideal B) :=
-  { P : Ideal B | P.IsMaximal ∧ P.LiesOver p }
+  { P : Ideal B | P.IsPrime ∧ P.LiesOver p }
 
-instance primesOver.isMaximal (Q : primesOver p B) : IsMaximal Q.1 :=
+instance primesOver.isPrime (Q : primesOver p B) : Q.1.IsPrime :=
   Q.2.1
 
 instance primesOver.liesOver (Q : primesOver p B) : Q.1.LiesOver p :=
   Q.2.2
 
-def primesOver.mk (P : Ideal B) [hP : P.IsMaximal] [hp : P.LiesOver p] : primesOver p B :=
-  ⟨P, ⟨hP, hp⟩⟩
+def primesOver.mk (P : Ideal B) [hPp : P.IsPrime] [hp : P.LiesOver p] : primesOver p B :=
+  ⟨P, ⟨hPp, hp⟩⟩
+
+instance primesOver.isMaximal {A : Type*} [CommRing A] {p : Ideal A} [p.IsMaximal] {B : Type*}
+    [CommRing B] [Algebra A B] [Algebra.IsIntegral A B] (Q : primesOver p B) : IsMaximal Q.1 :=
+  IsMaximal.of_liesOver_isMaximal Q.1 p
 
 end primesOver
 
@@ -139,25 +143,22 @@ noncomputable def primesOverFinset {A : Type*} [CommRing A] (p : Ideal A) (B : T
     [IsDedekindDomain B] [Algebra A B]: Finset (Ideal B) :=
   (factors (p.map (algebraMap A B))).toFinset
 
-variable {A : Type*} [CommRing A] {p : Ideal A} (hpb : p ≠ ⊥) [hpm : p.IsMaximal] (B : Type*)
-  [CommRing B] [IsDedekindDomain B] [Algebra A B] [NoZeroSMulDivisors A B]
-
-include hpb
-theorem coe_primesOverFinset : primesOverFinset p B = primesOver p B := by
+theorem coe_primesOverFinset {A : Type*} [CommRing A] {p : Ideal A} (hpb : p ≠ ⊥) [hpm : p.IsMaximal]
+    (B : Type*) [CommRing B] [IsDedekindDomain B] [Algebra A B] [NoZeroSMulDivisors A B]: primesOverFinset p B = primesOver p B := by
   classical
   ext P
   constructor
   · intro hp
     have h : P ≠ ⊥ := Factors.ne_bot p ⟨P, hp⟩
     have hp : P ∈ factors (map (algebraMap A B) p) := Multiset.mem_toFinset.mp hp
-    have hPm : P.IsMaximal := (prime_iff_isMaximal h).mp (prime_of_factor P hp)
-    exact ⟨hPm, ⟨hpm.eq_of_le (comap_ne_top _ hPm.ne_top)
+    have hPp : P.IsPrime := isPrime_of_prime (prime_of_factor P hp)
+    exact ⟨hPp, ⟨hpm.eq_of_le (comap_ne_top _ hPp.ne_top)
       (le_comap_of_map_le (le_of_dvd (dvd_of_mem_factors hp)))⟩⟩
-  · intro ⟨hpm, hp⟩
+  · intro ⟨hPp, hp⟩
     rw [primesOverFinset, Finset.mem_coe, Multiset.mem_toFinset]
     have hd := dvd_iff_le.mpr (map_le_of_le_comap (le_of_eq hp.over))
     have hir : Irreducible P := irreducible_iff_prime.mpr <|
-      (prime_iff_isMaximal (ne_bot_of_liesOver_of_ne_bot hpb P)).mpr hpm
+      prime_of_isPrime (ne_bot_of_liesOver_of_ne_bot hpb P) hPp
     have : map (algebraMap A B) p ≠ ⊥ :=
       (map_eq_bot_iff_of_injective (NoZeroSMulDivisors.algebraMap_injective A B)).mp.mt hpb
     rcases exists_mem_factors_of_dvd this hir hd with ⟨_, hq, he⟩
@@ -173,7 +174,7 @@ open scoped Classical in
   that all `ramificationIdx` are the same, which we define as the `Ideal.ramificationIdxIn`. -/
 noncomputable def ramificationIdxIn {A : Type*} [CommRing A] (p : Ideal A)
     (B : Type*) [CommRing B] [Algebra A B] : ℕ :=
-  if h : ∃ P : Ideal B, P.IsMaximal ∧ P.LiesOver p then
+  if h : ∃ P : Ideal B, P.IsPrime ∧ P.LiesOver p then
     Ideal.ramificationIdx (algebraMap A B) p h.choose else 0
 
 open scoped Classical in
@@ -181,25 +182,27 @@ open scoped Classical in
   that all `inertiaDeg` are the same, which we define as the `Ideal.inertiaDegIn`. -/
 noncomputable def inertiaDegIn {A : Type*} [CommRing A] (p : Ideal A)
     (B : Type*) [CommRing B] [Algebra A B] : ℕ :=
-  if h : ∃ P : Ideal B, P.IsMaximal ∧ P.LiesOver p then
+  if h : ∃ P : Ideal B, P.IsPrime ∧ P.LiesOver p then
     Ideal.inertiaDeg (algebraMap A B) p h.choose else 0
 
 section RamificationInertia
 
 variable {A B : Type*} [CommRing A] [IsDomain A] [IsIntegrallyClosed A] [CommRing B] [IsDomain B]
   [IsIntegrallyClosed B] [Algebra A B] [Module.Finite A B] [NoZeroSMulDivisors A B]
-  (p : Ideal A) (P : Ideal B) [hPm : P.IsMaximal] [hp : P.LiesOver p]
-  (Q : Ideal B) [hqm : Q.IsMaximal] [Q.LiesOver p]
+  (p : Ideal A) (P Q : Ideal B) [p.IsMaximal] [hPp : P.IsPrime] [hp : P.LiesOver p]
+  [hQp : Q.IsPrime] [Q.LiesOver p]
   (K L : Type*) [Field K] [Field L] [Algebra A K] [IsFractionRing A K] [Algebra B L]
   [IsFractionRing B L] [Algebra K L] [Algebra A L] [IsScalarTower A B L] [IsScalarTower A K L]
 
 include p in
 theorem exists_map_eq_of_isGalois [IsGalois K L] : ∃ σ : B ≃ₐ[A] B, map σ P = Q := by
   haveI := IsGalois.fractionRing_of_isGalois_isFractionRing A B K L
+  haveI : P.IsMaximal := IsMaximal.of_liesOver_isMaximal P p
+  haveI hQm : Q.IsMaximal := IsMaximal.of_liesOver_isMaximal Q p
   by_contra hs
   push_neg at hs
   rcases Submodule.mem_sup.mp <| (eq_top_iff_one (Q ⊔ ∏ σ : B ≃ₐ[A] B, map σ P)).mp <|
-    sup_prod_eq_top fun σ _ ↦ hqm.coprime_of_ne inferInstance (hs σ).symm
+    sup_prod_eq_top fun σ _ ↦ hQm.coprime_of_ne inferInstance (hs σ).symm
       with ⟨x, hx, y, hy, hxy⟩
   let n : B := ∏ σ : B ≃ₐ[A] B, σ x
   have hnx : n = (algebraMap A B) (intNorm A B x) := (algebraMap_intNorm_of_isGalois A B).symm
@@ -207,7 +210,7 @@ theorem exists_map_eq_of_isGalois [IsGalois K L] : ∃ σ : B ≃ₐ[A] B, map �
     rw [← P.over_def p, Q.over_def p, mem_comap, ← hnx]
     refine (span_singleton_le_iff_mem Q).mp ?_
     rw [← prod_span_singleton]
-    exact hqm.isPrime.prod_le.mpr ⟨1, Finset.mem_univ 1, (span_singleton_le_iff_mem Q).mpr hx⟩
+    exact hQm.isPrime.prod_le.mpr ⟨1, Finset.mem_univ 1, (span_singleton_le_iff_mem Q).mpr hx⟩
   rcases IsPrime.prod_mem_iff.mp (Eq.mpr (hnx ▸ Eq.refl (n ∈ P)) hnk : n ∈ P) with ⟨σ, _, hs⟩
   have hxp : x ∈ map σ.symm P := by
     rw [← AlgEquiv.symm_apply_apply σ x]
@@ -225,7 +228,7 @@ theorem ramificationIdx_eq_of_isGalois [IsGalois K L] :
   exact (ramificationIdx_map_eq p P σ).symm
 
 /-- In the case of Galois extension, all the `inertiaDeg` are the same. -/
-theorem inertiaDeg_eq_of_isGalois [p.IsMaximal] [IsGalois K L] :
+theorem inertiaDeg_eq_of_isGalois [IsGalois K L] :
     inertiaDeg (algebraMap A B) p P = inertiaDeg (algebraMap A B) p Q := by
   rcases exists_map_eq_of_isGalois p P Q K L with ⟨σ, hs⟩
   rw [← hs]
@@ -234,15 +237,15 @@ theorem inertiaDeg_eq_of_isGalois [p.IsMaximal] [IsGalois K L] :
 /-- In the case of Galois extension, the `ramificationIdxIn` is equal to any ramification index. -/
 theorem ramificationIdxIn_eq_ramificationIdx [IsGalois K L] :
     ramificationIdxIn p B = ramificationIdx (algebraMap A B) p P := by
-  have h : ∃ P : Ideal B, P.IsMaximal ∧ P.LiesOver p := ⟨P, hPm, hp⟩
+  have h : ∃ P : Ideal B, P.IsPrime ∧ P.LiesOver p := ⟨P, hPp, hp⟩
   obtain ⟨_, _⟩ := h.choose_spec
   rw [ramificationIdxIn, dif_pos h]
   exact ramificationIdx_eq_of_isGalois p h.choose P K L
 
 /-- In the case of Galois extension, the `inertiaDegIn` is equal to any inertia degree. -/
-theorem inertiaDegIn_eq_inertiaDeg [p.IsMaximal] [IsGalois K L] :
+theorem inertiaDegIn_eq_inertiaDeg [IsGalois K L] :
     inertiaDegIn p B = inertiaDeg (algebraMap A B) p P := by
-  have h : ∃ P : Ideal B, P.IsMaximal ∧ P.LiesOver p := ⟨P, hPm, hp⟩
+  have h : ∃ P : Ideal B, P.IsPrime ∧ P.LiesOver p := ⟨P, hPp, hp⟩
   obtain ⟨_, _⟩ := h.choose_spec
   rw [inertiaDegIn, dif_pos h]
   exact inertiaDeg_eq_of_isGalois p h.choose P K L
@@ -253,7 +256,7 @@ section fundamental_identity
 
 variable {A B : Type*} [CommRing A] [IsDedekindDomain A] [CommRing B] [IsDedekindDomain B]
   [Algebra A B] [Module.Finite A B] [NoZeroSMulDivisors A B]
-  {p : Ideal A} (hpb : p ≠ ⊥) [p.IsMaximal] (P : Ideal B) [hPm : P.IsMaximal] [hp : P.LiesOver p]
+  {p : Ideal A} (hpb : p ≠ ⊥) [p.IsMaximal] (P : Ideal B) [P.IsPrime] [hp : P.LiesOver p]
   (K L : Type*) [Field K] [Field L] [Algebra A K] [IsFractionRing A K] [Algebra B L]
   [IsFractionRing B L] [Algebra K L] [Algebra A L] [IsScalarTower A B L] [IsScalarTower A K L]
 
