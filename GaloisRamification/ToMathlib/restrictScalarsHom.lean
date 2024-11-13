@@ -138,8 +138,7 @@ noncomputable def reverse_algebra_is_scalar_tower {F S : Type*} (A : Type*)
     apply @IsScalarTower.mk _ _ _ (smul_instance) _ _
     intro r x y
     show (smul r x) • y = r • x • y
-    unfold_let smul
-    simp only
+    unfold smul
     rw [mul_smul, <-mul_smul_one]
     rw [show (1: A) = (1: S) • (1: A) from by simp only [one_smul]]
     rw [<-smul_assoc, reverse_hom_smul_one_eq_self]

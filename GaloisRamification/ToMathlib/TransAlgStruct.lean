@@ -133,7 +133,7 @@ def ofAlgOnEquivRing_scalar_tower
   apply IsScalarTower.mk
   intro r x y
   show (smul1 r x) • y = smul2 r (x • y)
-  unfold_let smul1 smul2
+  unfold smul1 smul2
   simp only [smul_eq_mul, map_mul, RingEquiv.apply_symm_apply, mul_smul]
 end Algebra
 
