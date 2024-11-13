@@ -128,7 +128,7 @@ instance primesOver.liesOver (Q : primesOver p B) : Q.1.LiesOver p :=
   Q.2.2
 
 def primesOver.mk (P : Ideal B) [hP : P.IsMaximal] [hp : P.LiesOver p] : primesOver p B :=
-  ⟨P, hP, hp⟩
+  ⟨P, ⟨hP, hp⟩⟩
 
 end primesOver
 
@@ -168,9 +168,23 @@ end primesOverFinset
 
 namespace Ideal
 
-section transitive
+open scoped Classical in
+/-- In the case of Galois extension, it can be seen from the Theorem `ramificationIdx_eq_of_IsGalois`
+  that all `ramificationIdx` are the same, which we define as the `Ideal.ramificationIdxIn`. -/
+noncomputable def ramificationIdxIn {A : Type*} [CommRing A] (p : Ideal A)
+    (B : Type*) [CommRing B] [Algebra A B] : ℕ :=
+  if h : ∃ P : Ideal B, P.IsMaximal ∧ P.LiesOver p then
+    Ideal.ramificationIdx (algebraMap A B) p h.choose else 0
 
-/-! ### Galois group `Gal(K/L)` acts transitively on the set of all maximal ideals -/
+open scoped Classical in
+/-- In the case of Galois extension, it can be seen from the Theorem `inertiaDeg_eq_of_IsGalois`
+  that all `inertiaDeg` are the same, which we define as the `Ideal.inertiaDegIn`. -/
+noncomputable def inertiaDegIn {A : Type*} [CommRing A] (p : Ideal A)
+    (B : Type*) [CommRing B] [Algebra A B] : ℕ :=
+  if h : ∃ P : Ideal B, P.IsMaximal ∧ P.LiesOver p then
+    Ideal.inertiaDeg (algebraMap A B) p h.choose else 0
+
+section RamificationInertia
 
 variable {A B : Type*} [CommRing A] [IsDomain A] [IsIntegrallyClosed A] [CommRing B] [IsDomain B]
   [IsIntegrallyClosed B] [Algebra A B] [Module.Finite A B] [NoZeroSMulDivisors A B]
@@ -198,7 +212,7 @@ theorem exists_map_eq_of_isGalois [IsGalois K L] : ∃ σ : B ≃ₐ[A] B, map �
   have hxp : x ∈ map σ.symm P := by
     rw [← AlgEquiv.symm_apply_apply σ x]
     exact mem_map_of_mem σ.symm hs
-  have h := Ideal.add_mem (map σ.symm P) hxp <|
+  have h := (map σ.symm P).add_mem hxp <|
     (prod_le_inf.trans (Finset.inf_le (Finset.mem_univ σ.symm))) hy
   rw [hxy] at h
   exact IsMaximal.ne_top inferInstance ((eq_top_iff_one _).mpr h)
@@ -211,44 +225,17 @@ theorem ramificationIdx_eq_of_isGalois [IsGalois K L] :
   exact (ramificationIdx_map_eq p P σ).symm
 
 /-- In the case of Galois extension, all the `inertiaDeg` are the same. -/
-theorem inertiaDeg_eq_of_isGalois [IsGalois K L] [p.IsMaximal] :
+theorem inertiaDeg_eq_of_isGalois [p.IsMaximal] [IsGalois K L] :
     inertiaDeg (algebraMap A B) p P = inertiaDeg (algebraMap A B) p Q := by
   rcases exists_map_eq_of_isGalois p P Q K L with ⟨σ, hs⟩
   rw [← hs]
   exact (inertiaDeg_map_eq p P σ).symm
 
-end transitive
-
-section RamificationInertia
-
-open scoped Classical in
-/-- In the case of Galois extension, it can be seen from the Theorem `ramificationIdx_eq_of_IsGalois`
-  that all `ramificationIdx` are the same, which we define as the `Ideal.ramificationIdxIn`. -/
-noncomputable def ramificationIdxIn {A : Type*} [CommRing A] (p : Ideal A)
-    (B : Type*) [CommRing B] [Algebra A B] : ℕ :=
-  if h : ∃ P : Ideal B, P.IsMaximal ∧ P.LiesOver p then
-    Ideal.ramificationIdx (algebraMap A B) p h.choose else 0
-
-open scoped Classical in
-/-- In the case of Galois extension, it can be seen from the Theorem `inertiaDeg_eq_of_IsGalois`
-  that all `inertiaDeg` are the same, which we define as the `Ideal.inertiaDegIn`. -/
-noncomputable def inertiaDegIn {A : Type*} [CommRing A] (p : Ideal A)
-    (B : Type*) [CommRing B] [Algebra A B] : ℕ :=
-  if h : ∃ P : Ideal B, P.IsMaximal ∧ P.LiesOver p then
-    Ideal.inertiaDeg (algebraMap A B) p h.choose else 0
-
-variable {A B : Type*} [CommRing A] [IsDomain A] [IsIntegrallyClosed A] [CommRing B] [IsDomain B]
-  [IsIntegrallyClosed B] [Algebra A B] [Module.Finite A B] [NoZeroSMulDivisors A B]
-  (p : Ideal A) (P : Ideal B) [hPm : P.IsMaximal] [hp : P.LiesOver p]
-  (K L : Type*) [Field K] [Field L] [Algebra A K] [IsFractionRing A K] [Algebra B L]
-  [IsFractionRing B L] [Algebra K L] [Algebra A L] [IsScalarTower A B L] [IsScalarTower A K L]
-
 /-- In the case of Galois extension, the `ramificationIdxIn` is equal to any ramification index. -/
 theorem ramificationIdxIn_eq_ramificationIdx [IsGalois K L] :
     ramificationIdxIn p B = ramificationIdx (algebraMap A B) p P := by
   have h : ∃ P : Ideal B, P.IsMaximal ∧ P.LiesOver p := ⟨P, hPm, hp⟩
-  haveI := h.choose_spec.1
-  haveI := h.choose_spec.2
+  obtain ⟨_, _⟩ := h.choose_spec
   rw [ramificationIdxIn, dif_pos h]
   exact ramificationIdx_eq_of_isGalois p h.choose P K L
 
@@ -256,11 +243,9 @@ theorem ramificationIdxIn_eq_ramificationIdx [IsGalois K L] :
 theorem inertiaDegIn_eq_inertiaDeg [p.IsMaximal] [IsGalois K L] :
     inertiaDegIn p B = inertiaDeg (algebraMap A B) p P := by
   have h : ∃ P : Ideal B, P.IsMaximal ∧ P.LiesOver p := ⟨P, hPm, hp⟩
-  haveI := h.choose_spec.1
-  haveI := h.choose_spec.2
+  obtain ⟨_, _⟩ := h.choose_spec
   rw [inertiaDegIn, dif_pos h]
   exact inertiaDeg_eq_of_isGalois p h.choose P K L
-
 
 end RamificationInertia
 
@@ -268,30 +253,21 @@ section fundamental_identity
 
 variable {A B : Type*} [CommRing A] [IsDedekindDomain A] [CommRing B] [IsDedekindDomain B]
   [Algebra A B] [Module.Finite A B] [NoZeroSMulDivisors A B]
-  (p : Ideal A) (P : Ideal B) [hPm : P.IsMaximal] [hp : P.LiesOver p]
+  {p : Ideal A} (hpb : p ≠ ⊥) [p.IsMaximal] (P : Ideal B) [hPm : P.IsMaximal] [hp : P.LiesOver p]
   (K L : Type*) [Field K] [Field L] [Algebra A K] [IsFractionRing A K] [Algebra B L]
   [IsFractionRing B L] [Algebra K L] [Algebra A L] [IsScalarTower A B L] [IsScalarTower A K L]
 
+include hpb in
 /-- The form of the **fundamental identity** in the case of Galois extension. -/
-theorem ncard_primesOver_mul_ramificationIdxIn_mul_inertiaDegIn [p.IsMaximal] [IsGalois K L] :
-    (primesOver p B).ncard * (ramificationIdxIn p B * inertiaDegIn p B) =
-    Module.finrank K L := by
-  by_cases hpb : p = ⊥
-  · simp_rw [hpb] at *
-    haveI : (⊥ : Ideal B).IsPrime := bot_prime
-    haveI : (⊥ : Ideal B).IsMaximal := IsMaximal.of_liesOver_isMaximal (⊥ : Ideal B) (⊥ : Ideal A)
-    rw [ramificationIdxIn_eq_ramificationIdx (⊥ : Ideal A) (⊥ : Ideal B) K L,
-      inertiaDegIn_eq_inertiaDeg (⊥ : Ideal A) (⊥ : Ideal B) K L]
-    simp only [ramificationIdx_bot, inertiaDeg_algebraMap, zero_mul, mul_zero]
-    sorry
-  · rw [← smul_eq_mul, ← coe_primesOverFinset hpb B, Set.ncard_coe_Finset, ← Finset.sum_const]
-    rw [← sum_ramification_inertia B p K L hpb]
-    apply Finset.sum_congr rfl
-    intro P hp
-    rw [← Finset.mem_coe, coe_primesOverFinset hpb B] at hp
-    haveI : P.IsMaximal := hp.1
-    haveI : P.LiesOver p := hp.2
-    rw [ramificationIdxIn_eq_ramificationIdx p P K L, inertiaDegIn_eq_inertiaDeg p P K L]
+theorem ncard_primesOver_mul_ramificationIdxIn_mul_inertiaDegIn [IsGalois K L] :
+    (primesOver p B).ncard * (ramificationIdxIn p B * inertiaDegIn p B) = Module.finrank K L := by
+  rw [← smul_eq_mul, ← coe_primesOverFinset hpb B, Set.ncard_coe_Finset, ← Finset.sum_const]
+  rw [← sum_ramification_inertia B p K L hpb]
+  apply Finset.sum_congr rfl
+  intro P hp
+  rw [← Finset.mem_coe, coe_primesOverFinset hpb B] at hp
+  obtain ⟨_, _⟩ := hp
+  rw [ramificationIdxIn_eq_ramificationIdx p P K L, inertiaDegIn_eq_inertiaDeg p P K L]
 
 end fundamental_identity
 

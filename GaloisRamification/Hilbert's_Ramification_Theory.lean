@@ -52,6 +52,12 @@ open RingOfIntegers
 
 section preparation
 
+lemma inertiaDeg_algebra_tower {R S T : Type*} [CommRing R] [CommRing S] [CommRing T] [Algebra R S]
+  [Algebra S T] [Algebra R T] [IsScalarTower R S T] (p : Ideal R) (P : Ideal S) (I : Ideal T)
+  [p.IsMaximal] [P.IsMaximal] [P.LiesOver p] [I.LiesOver P] :
+  inertiaDeg (algebraMap R T) p I =
+  inertiaDeg (algebraMap R S) p P * inertiaDeg (algebraMap S T) P I := sorry
+
 variable (K : Type*) [Field K] {L : Type*} [Field L] [Algebra K L]
   (P : Ideal (𝓞 L)) (p : Ideal (𝓞 K))
 
@@ -570,7 +576,7 @@ private lemma ramificationIdx_and_inertiaDeg_of_decompositionIdeal [IsGalois K L
       (map_isMaximal_ne_bot p L) (map_le_iff_le_comap.mpr (le_of_eq rfl))
   have h0 : inertiaDeg (algebraMap (𝓞 K) (𝓞 L)) p P > 0 := inertiaDeg_pos p P
   have hi := Nat.le_of_dvd h0 <| Dvd.intro_left _  <| Eq.symm <|
-    inertiaDeg_algebra_tower (P := (decompositionIdeal p P))
+    inertiaDeg_algebra_tower p (decompositionIdeal p P) P
   rw [ramificationIdx_eq_ramificationIdx_of_isGalois Pz P,
     ramificationIdx_eq_ramificationIdx_of_isGalois p P] at hr
   rw [inertiaDeg_eq_inertiaDeg_of_isGalois Pz P, inertiaDeg_eq_inertiaDeg_of_isGalois p P] at hi
@@ -603,7 +609,7 @@ theorem ramificationIdx_of_decompositionideal_over_bot_eq_one [IsGalois K L] : r
 residue class field corresponding to `p`. -/
 theorem inertiaDeg_of_decompositionideal_over_bot_eq_one [IsGalois K L] : inertiaDeg
     (algebraMap (𝓞 K) (𝓞 (decompositionField p P))) p (decompositionIdeal p P) = 1 := by
-  have h := inertiaDeg_algebra_tower (p := p) (P := (decompositionIdeal p P)) (I := P)
+  have h := inertiaDeg_algebra_tower p (decompositionIdeal p P) P
   rw [inertiaDeg_eq_inertiaDeg_of_isGalois (idealUnder (decompositionField p P) P) P,
     inertiaDeg_of_decompositionIdeal p P, ← inertiaDeg_eq_inertiaDeg_of_isGalois p P] at h
   nth_rw 1 [← one_mul (inertiaDeg (algebraMap (𝓞 K) (𝓞 L)) p P)] at h
@@ -891,7 +897,7 @@ theorem ramificationIdx_below_inertiaideal_eq_one_of_unique :
 theorem inertiaDeg_below_inertiaideal_eq_inertiaDeg_of_unique :
     inertiaDeg_of_isGalois p (inertiaField' K P) = inertiaDeg_of_isGalois p L := by
   letI := inertiaField_isGalois_of_unique p P
-  have h := inertiaDeg_algebra_tower (p := p) (P := (inertiaIdeal' K P)) (I := P)
+  have h := inertiaDeg_algebra_tower p (inertiaIdeal' K P) P
   nth_rw 1 [inertiaDeg_eq_inertiaDeg_of_isGalois (inertiaIdeal' K P) P,
     inertiaDeg_over_inertiaideal_eq_one_of_unique p P, mul_one] at h
   simp_rw [inertiaDeg_eq_inertiaDeg_of_isGalois] at h
