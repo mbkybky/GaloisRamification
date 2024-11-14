@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2023 Hu Yongle. All rights reserved.
+Copyright (c) 2023 Yongle Hu. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Hu Yongle, Jiedong Jiang
+Authors: Yongle Hu, Jiedong Jiang
 -/
 import Mathlib.Tactic
 import Mathlib.NumberTheory.NumberField.Norm

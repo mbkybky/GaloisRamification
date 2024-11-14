@@ -74,24 +74,6 @@ instance lies_over_of_over_isMaximal : (p.over_isMaximal B).LiesOver p where
 
 attribute [irreducible] over_isMaximal
 
-variable (A : Type*) [CommRing A] (p : Ideal A) [p.IsMaximal] (B : Type*) [Ring B] [Nontrivial B]
-  [Algebra A B] [NoZeroSMulDivisors A B]
-
-@[simp]
-theorem under_bot : under A (⊥ : Ideal B) = ⊥ :=
-  comap_bot_of_injective (algebraMap A B) (NoZeroSMulDivisors.algebraMap_injective A B)
-
-instance bot_liesOber_bot : (⊥ : Ideal B).LiesOver (⊥ : Ideal A) where
-  over := (under_bot A B).symm
-
-theorem ne_bot_of_liesOver_of_ne_bot {A : Type*} [CommRing A] {p : Ideal A} (hp : p ≠ ⊥) {B : Type*}
-    [Ring B] [Nontrivial B] [Algebra A B] [NoZeroSMulDivisors A B]
-    (P : Ideal B) [P.LiesOver p] : P ≠ ⊥ := by
-  contrapose! hp
-  apply (over_def P p).trans
-  rw [hp]
-  exact under_bot A B
-
 end Ideal
 
 
@@ -114,12 +96,39 @@ theorem prime_iff_isMaximal {p : Ideal A} (hp0 : p ≠ ⊥) : Prime p ↔ p.IsMa
 
 end lie_over
 
+namespace Ideal
+
+variable (A : Type*) [CommRing A] (B : Type*) [Ring B] [Nontrivial B]
+  [Algebra A B] [NoZeroSMulDivisors A B] {p : Ideal A}
+
+variable {A} {B} in
+theorem map_ne_bot_of_ne_bot {I : Ideal A} (h : I ≠ ⊥) : map (algebraMap A B) I ≠ ⊥ :=
+  (map_eq_bot_iff_of_injective (NoZeroSMulDivisors.algebraMap_injective A B)).mp.mt h
+
+@[simp]
+theorem under_bot : under A (⊥ : Ideal B) = ⊥ :=
+  comap_bot_of_injective (algebraMap A B) (NoZeroSMulDivisors.algebraMap_injective A B)
+
+instance bot_liesOber_bot : (⊥ : Ideal B).LiesOver (⊥ : Ideal A) where
+  over := (under_bot A B).symm
+
+variable {A} {B} in
+theorem ne_bot_of_liesOver_of_ne_bot (hp : p ≠ ⊥) (P : Ideal B) [P.LiesOver p] : P ≠ ⊥ := by
+  contrapose! hp
+  apply (over_def P p).trans
+  rw [hp]
+  exact under_bot A B
+
+end Ideal
+
 section primesOver
 
 variable {A : Type*} [CommSemiring A] (p : Ideal A) (B : Type*) [Semiring B] [Algebra A B]
 
 def primesOver : Set (Ideal B) :=
   { P : Ideal B | P.IsPrime ∧ P.LiesOver p }
+
+variable {B}
 
 instance primesOver.isPrime (Q : primesOver p B) : Q.1.IsPrime :=
   Q.2.1
@@ -130,40 +139,42 @@ instance primesOver.liesOver (Q : primesOver p B) : Q.1.LiesOver p :=
 def primesOver.mk (P : Ideal B) [hPp : P.IsPrime] [hp : P.LiesOver p] : primesOver p B :=
   ⟨P, ⟨hPp, hp⟩⟩
 
-instance primesOver.isMaximal {A : Type*} [CommRing A] {p : Ideal A} [p.IsMaximal] {B : Type*}
-    [CommRing B] [Algebra A B] [Algebra.IsIntegral A B] (Q : primesOver p B) : IsMaximal Q.1 :=
+end primesOver
+
+section IsIntegral
+
+variable {A : Type*} [CommRing A] {p : Ideal A} [p.IsMaximal] {B : Type*}
+  [CommRing B] [Algebra A B] [Algebra.IsIntegral A B] (Q : primesOver p B)
+
+instance primesOver.isMaximal : IsMaximal Q.1 :=
   IsMaximal.of_liesOver_isMaximal Q.1 p
 
-end primesOver
+variable (p) (B)
+
+theorem primesOver_ncard_ne_zero : (primesOver p B).ncard ≠ 0 := sorry
+
+theorem one_le_primesOver_ncard : 1 ≤ (primesOver p B).ncard :=
+  Nat.one_le_iff_ne_zero.mpr (primesOver_ncard_ne_zero p B)
+
+end IsIntegral
 
 section primesOverFinset
 
 open scoped Classical in
-noncomputable def primesOverFinset {A : Type*} [CommRing A] (p : Ideal A) (B : Type*) [CommRing B]
-    [IsDedekindDomain B] [Algebra A B]: Finset (Ideal B) :=
+noncomputable abbrev primesOverFinset {A : Type*} [CommRing A] (p : Ideal A) (B : Type*) [CommRing B]
+    [IsDedekindDomain B] [Algebra A B] : Finset (Ideal B) :=
   (factors (p.map (algebraMap A B))).toFinset
 
+-- #find_home primesOverFinset
+
 theorem coe_primesOverFinset {A : Type*} [CommRing A] {p : Ideal A} (hpb : p ≠ ⊥) [hpm : p.IsMaximal]
-    (B : Type*) [CommRing B] [IsDedekindDomain B] [Algebra A B] [NoZeroSMulDivisors A B]: primesOverFinset p B = primesOver p B := by
+    (B : Type*) [CommRing B] [IsDedekindDomain B] [Algebra A B] [NoZeroSMulDivisors A B] : primesOverFinset p B = primesOver p B := by
   classical
   ext P
-  constructor
-  · intro hp
-    have h : P ≠ ⊥ := Factors.ne_bot p ⟨P, hp⟩
-    have hp : P ∈ factors (map (algebraMap A B) p) := Multiset.mem_toFinset.mp hp
-    have hPp : P.IsPrime := isPrime_of_prime (prime_of_factor P hp)
-    exact ⟨hPp, ⟨hpm.eq_of_le (comap_ne_top _ hPp.ne_top)
-      (le_comap_of_map_le (le_of_dvd (dvd_of_mem_factors hp)))⟩⟩
-  · intro ⟨hPp, hp⟩
-    rw [primesOverFinset, Finset.mem_coe, Multiset.mem_toFinset]
-    have hd := dvd_iff_le.mpr (map_le_of_le_comap (le_of_eq hp.over))
-    have hir : Irreducible P := irreducible_iff_prime.mpr <|
-      prime_of_isPrime (ne_bot_of_liesOver_of_ne_bot hpb P) hPp
-    have : map (algebraMap A B) p ≠ ⊥ :=
-      (map_eq_bot_iff_of_injective (NoZeroSMulDivisors.algebraMap_injective A B)).mp.mt hpb
-    rcases exists_mem_factors_of_dvd this hir hd with ⟨_, hq, he⟩
-    rw [associated_iff_eq.mp he]
-    exact hq
+  rw [primesOverFinset, factors_eq_normalizedFactors, Finset.mem_coe, Multiset.mem_toFinset]
+  exact (P.mem_normalizedFactors_iff (map_ne_bot_of_ne_bot hpb)).trans <| Iff.intro
+    (fun ⟨hPp, h⟩ => ⟨hPp, ⟨hpm.eq_of_le (comap_ne_top _ hPp.ne_top) (le_comap_of_map_le h)⟩⟩)
+    (fun ⟨hPp, h⟩ => ⟨hPp, map_le_of_le_comap h.1.le⟩)
 
 end primesOverFinset
 
@@ -175,7 +186,7 @@ open scoped Classical in
 noncomputable def ramificationIdxIn {A : Type*} [CommRing A] (p : Ideal A)
     (B : Type*) [CommRing B] [Algebra A B] : ℕ :=
   if h : ∃ P : Ideal B, P.IsPrime ∧ P.LiesOver p then
-    Ideal.ramificationIdx (algebraMap A B) p h.choose else 0
+    p.ramificationIdx (algebraMap A B) h.choose else 0
 
 open scoped Classical in
 /-- In the case of Galois extension, it can be seen from the Theorem `inertiaDeg_eq_of_IsGalois`
@@ -183,7 +194,36 @@ open scoped Classical in
 noncomputable def inertiaDegIn {A : Type*} [CommRing A] (p : Ideal A)
     (B : Type*) [CommRing B] [Algebra A B] : ℕ :=
   if h : ∃ P : Ideal B, P.IsPrime ∧ P.LiesOver p then
-    Ideal.inertiaDeg (algebraMap A B) p h.choose else 0
+    p.inertiaDeg (algebraMap A B) h.choose else 0
+
+section MulAction
+
+variable {A B : Type*} [CommRing A] [CommRing B] [Algebra A B] (p : Ideal A)
+  (K L : Type*) [Field K] [Field L] [Algebra A K] [IsFractionRing A K] [Algebra B L]
+  [Algebra K L] [Algebra A L] [IsScalarTower A B L] [IsScalarTower A K L]
+  [IsIntegralClosure B A L] [FiniteDimensional K L]
+
+/-- The `MulAction` of the Galois group `L ≃ₐ[K] L` on the set `primesOver p L`,
+  given by `σ ↦ (P ↦ σ P)`. -/
+instance : MulAction (L ≃ₐ[K] L) (primesOver p B) where
+  smul σ Q := primesOver.mk p (map (galRestrict A K L B σ) Q.1)
+  one_smul Q := by
+    apply Subtype.val_inj.mp
+    show map _ Q.1 = Q.1
+    simpa only [map_one] using map_id Q.1
+  mul_smul σ τ Q := by
+    apply Subtype.val_inj.mp
+    show map _ Q.1 = map _ (map _ Q.1)
+    rw [_root_.map_mul]
+    exact (Q.1.map_map ((galRestrict A K L B) τ).toRingHom ((galRestrict A K L B) σ).toRingHom).symm
+
+theorem coe_smul_primesOver (σ : L ≃ₐ[K] L) (P : primesOver p B):
+  (σ • P).1 = map (galRestrict A K L B σ) P := rfl
+
+theorem coe_smul_primesOver_mk (σ : L ≃ₐ[K] L) (P : Ideal B) [P.IsPrime] [P.LiesOver p] :
+  (σ • primesOver.mk p P).1 = map (galRestrict A K L B σ) P := rfl
+
+end MulAction
 
 section RamificationInertia
 
@@ -202,8 +242,7 @@ theorem exists_map_eq_of_isGalois [IsGalois K L] : ∃ σ : B ≃ₐ[A] B, map �
   by_contra hs
   push_neg at hs
   rcases Submodule.mem_sup.mp <| (eq_top_iff_one (Q ⊔ ∏ σ : B ≃ₐ[A] B, map σ P)).mp <|
-    sup_prod_eq_top fun σ _ ↦ hQm.coprime_of_ne inferInstance (hs σ).symm
-      with ⟨x, hx, y, hy, hxy⟩
+    sup_prod_eq_top fun σ _ ↦ hQm.coprime_of_ne inferInstance (hs σ).symm with ⟨x, hx, y, hy, hxy⟩
   let n : B := ∏ σ : B ≃ₐ[A] B, σ x
   have hnx : n = (algebraMap A B) (intNorm A B x) := (algebraMap_intNorm_of_isGalois A B).symm
   have hnk : intNorm A B x ∈ P.under A := by
@@ -218,7 +257,14 @@ theorem exists_map_eq_of_isGalois [IsGalois K L] : ∃ σ : B ≃ₐ[A] B, map �
   have h := (map σ.symm P).add_mem hxp <|
     (prod_le_inf.trans (Finset.inf_le (Finset.mem_univ σ.symm))) hy
   rw [hxy] at h
-  exact IsMaximal.ne_top inferInstance ((eq_top_iff_one _).mpr h)
+  exact IsMaximal.ne_top inferInstance ((eq_top_iff_one (map σ.symm P)).mpr h)
+
+instance [FiniteDimensional K L] [IsGalois K L] :
+    MulAction.IsPretransitive (L ≃ₐ[K] L) (primesOver p B) where
+  exists_smul_eq P Q := by
+    rcases exists_map_eq_of_isGalois p P.1 Q.1 K L with ⟨σ, hs⟩
+    rw [show σ = _ from (MulEquiv.symm_apply_eq (galRestrict A K L B)).mp rfl] at hs
+    exact ⟨(galRestrict A K L B).symm σ, Subtype.val_inj.mp hs⟩
 
 /-- In the case of Galois extension, all the `ramificationIdx` over a fixed ideal are the same. -/
 theorem ramificationIdx_eq_of_isGalois [IsGalois K L] :
@@ -273,32 +319,6 @@ theorem ncard_primesOver_mul_ramificationIdxIn_mul_inertiaDegIn [IsGalois K L] :
   rw [ramificationIdxIn_eq_ramificationIdx p P K L, inertiaDegIn_eq_inertiaDeg p P K L]
 
 end fundamental_identity
-
-section MulAction
-
-open MulAction
-/-
-/-- The `MulAction` of the Galois group `L ≃ₐ[K] L` on the set `primesOver p L`,
-given by `σ ↦ (P ↦ σ P)`. -/
-instance Gal_MulAction_primes (L : Type*) [Field L] [NumberField L] [Algebra K L] :
-    MulAction (L ≃ₐ[K] L) (primesOver p L) where
-  smul σ Q := primesOver.mk p (map (mapRingHom σ) Q.1)
-  one_smul Q := by
-    show primesOver.mk p (map (mapRingHom (1 : L ≃ₐ[K] L)) Q.1) = Q
-    simp only [← Subtype.val_inj, mapRingHom_one, map_id]
-  mul_smul σ τ Q := by
-    show primesOver.mk p (map (mapRingHom (σ * τ)) Q.1) =
-        primesOver.mk p (map (mapRingHom σ) (primesOver.mk p (map (mapRingHom τ) Q.1)).1)
-    simp only [← Subtype.val_inj, map_map]
-    rfl
-
-theorem Gal_MulAction_primes_mk_coe (σ : L ≃ₐ[K] L) :
-  (σ • primesOver.mk p P).1 = map (mapRingHom σ) P := rfl
-
-instance [IsDedekindDomain R] [IsGalois K L] (p : Ideal R) :
-    MulAction.IsPretransitive (L ≃ₐ[K] L) (primesOver S p) :=
- -/
-end MulAction
 
 end Ideal
 
