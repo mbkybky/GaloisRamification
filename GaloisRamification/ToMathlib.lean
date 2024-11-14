@@ -98,8 +98,8 @@ open Multiset
 
 /-- If `L` be an extension of `R`, then for a monic polynomial `p : R[X]`, the roots of `p`in `L`
 are equal to the roots of `p` in the integral closure of `R` in `L`. -/
-theorem isIntegralClosure_root_eq_ofMonic {p : R[X]} (hp : p.Monic):
-    (map (algebraMap R S) p).roots.map (algebraMap S L) = (map (algebraMap R L) p).roots := by
+theorem Monic.roots_map_eq_of_IsIntegralClosure {p : R[X]} (hp : p.Monic):
+    (p.map (algebraMap R S)).roots.map (algebraMap S L) = (p.map (algebraMap R L)).roots := by
   classical
   ext x
   by_cases hx : ∃ y : S, algebraMap S L y = x
@@ -119,16 +119,16 @@ theorem isIntegralClosure_root_eq_ofMonic {p : R[X]} (hp : p.Monic):
 
 /-- If `L` be an extension of `R`, then for a monic polynomial `p : R[X]`, the number of roots
 of `p` in `L` is equal to the number of roots of `p` in the integral closure of `R` in `L`. -/
-theorem isIntegralClosure_root_card_eq_ofMonic {p : R[X]} (hp : p.Monic) :
-    card (map (algebraMap R S) p).roots = card (map (algebraMap R L) p).roots := by
-  rw [← isIntegralClosure_root_eq_ofMonic S L hp, card_map]
+theorem Monic.roots_card_eq_of_IsIntegralClosure {p : R[X]} (hp : p.Monic) :
+    card (p.map (algebraMap R S)).roots = card (p.map (algebraMap R L)).roots := by
+  rw [← roots_map_eq_of_IsIntegralClosure S L hp, card_map]
 
 /-- A variant of the theorem `Polynomial.roots_map_of_injective_of_card_eq_natDegree` that
   replaces the injectivity condition with the condition `Polynomial.map f p ≠ 0`. -/
 theorem roots_map_of_card_eq_natDegree {A B : Type*} [CommRing A] [CommRing B]
     [IsDomain A] [IsDomain B] {p : A[X]} {f : A →+* B} (h : p.map f ≠ 0)
-    (hroots : card p.roots = p.natDegree) : p.roots.map f  = (map f p).roots := by
-  apply eq_of_le_of_card_le (map_roots_le h)
-  simpa only [card_map, hroots] using (card_roots' (map f p)).trans (natDegree_map_le f p)
+    (hroots : card p.roots = p.natDegree) : p.roots.map f  = (p.map f).roots :=
+  eq_of_le_of_card_le (map_roots_le h) <|
+    by simpa only [card_map, hroots] using (card_roots' (p.map f)).trans (natDegree_map_le f p)
 
 end Polynomial

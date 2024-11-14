@@ -356,16 +356,14 @@ theorem quotientAlgEquivHom_surjective :
   have e : PowerBasis F (separableClosure F E) := Field.powerBasisOfFiniteOfSeparable F _
   intro σ
   let β := (e.liftEquiv (S' := E)).toFun (σ.toAlgHom.restrictDomain (separableClosure F E))
-  rcases Quotient.exists_rep e.gen.1 with ⟨a, ha⟩
-  let f : A[X] := minpoly A a
-  let fl : B[X] := f.map (algebraMap A B)
   let ϕp : A →+* F := Ideal.Quotient.mk p
   let ϕP : B →+* E := Ideal.Quotient.mk P
-  have hq : ⟦a⟧ = ϕP a := rfl
-  rw [hq] at ha
+  rcases @Quotient.mk_surjective _ _ P e.gen.1 with ⟨a, ha⟩
+  let f : A[X] := minpoly A a
+  let fl : B[X] := f.map (algebraMap A B)
   have hai : IsIntegral A a := IsIntegral.isIntegral a
   have hm : f.Monic := minpoly.monic hai
-  have h0 : (fl.map ϕP) ≠ 0 := map_monic_ne_zero (Monic.map (algebraMap A B) hm)
+  have h0 : (fl.map ϕP) ≠ 0 := map_monic_ne_zero (hm.map (algebraMap A B))
   have hbr : β.1 ∈ (fl.map ϕP).roots := by
     apply (mem_roots_iff_aeval_eq_zero h0).mpr
     have hc : fl.map ϕP = (f.map ϕp).map (algebraMap F E) := by
@@ -378,17 +376,16 @@ theorem quotientAlgEquivHom_surjective :
       rfl
     simp only [Equiv.toFun_as_coe, AlgEquiv.toAlgHom_eq_coe, PowerBasis.liftEquiv_apply_coe,
       AlgHom.coe_coe, hc, aeval_map_algebraMap, ← hbz]
-  have hfe : (Polynomial.map (algebraMap A K) f) = minpoly K (algebraMap B L a) := by
-    refine minpoly.eq_of_irreducible_of_monic
-      ((Monic.irreducible_iff_irreducible_map_fraction_map (minpoly.monic hai)).mp
-        (minpoly.irreducible hai)) ?_ (Monic.map (algebraMap A K) (minpoly.monic hai))
-    simp only [aeval_map_algebraMap, aeval_algebraMap_eq_zero_iff, minpoly.aeval, f]
+  have hfe : (Polynomial.map (algebraMap A K) f) = minpoly K (algebraMap B L a) :=
+    minpoly.eq_of_irreducible_of_monic
+      (hm.irreducible_iff_irreducible_map_fraction_map.mp (minpoly.irreducible hai))
+        (by simp only [aeval_map_algebraMap, aeval_algebraMap_eq_zero_iff, minpoly.aeval, f])
+          (hm.map (algebraMap A K))
   have h : fl.roots.map ϕP = (fl.map ϕP).roots := by
     have h := (natDegree_eq_card_roots' (hn.splits (algebraMap B L a))).symm
-    rw [← hfe, natDegree_map, Monic.natDegree_map (minpoly.monic hai), Polynomial.map_map,
-      ← IsScalarTower.algebraMap_eq A K L,
-      ← isIntegralClosure_root_card_eq_ofMonic B L (minpoly.monic hai),
-      ← Monic.natDegree_map (minpoly.monic hai) (algebraMap A B)] at h
+    rw [← hfe, natDegree_map, hm.natDegree_map, Polynomial.map_map,
+      ← IsScalarTower.algebraMap_eq A K L, ← hm.roots_card_eq_of_IsIntegralClosure B L,
+      ← hm.natDegree_map (algebraMap A B)] at h
     exact roots_map_of_card_eq_natDegree h0 h
   rw [← h] at hbr
   rcases Multiset.mem_map.mp hbr with ⟨b, ⟨hbr, hb⟩⟩
@@ -400,7 +397,7 @@ theorem quotientAlgEquivHom_surjective :
   let ε := IntermediateField.adjoin.powerBasis (hn.isIntegral (algebraMap B L a))
   let τ : L ≃ₐ[K] L := (ε.lift (algebraMap B L b) h).fieldRangeAlgEquiv.liftNormal L
   use galRestrict A K L B τ
-  refine AlgEquiv.coe_algHom_injective <| separableClosure.restrictDomain_injective F E <|
+  refine AlgEquiv.coe_algHom_injective <| IsPurelyInseparable.injective_restrictDomain _ E F E <|
     e.liftEquiv.injective <| Subtype.val_inj.mp ?_
   simp only [e.liftEquiv_apply_coe, AlgHom.restrictDomain_apply, IntermediateField.algebraMap_apply]
   nth_rw 1 [← ha]
@@ -513,15 +510,15 @@ theorem quotientAlgEquivHom_surjective' :
       AlgHom.coe_coe, hc, aeval_map_algebraMap, ← hbz]
   have hfe : (Polynomial.map (algebraMap A K) f) = minpoly K (algebraMap B L a) := by
     refine minpoly.eq_of_irreducible_of_monic
-      ((Monic.irreducible_iff_irreducible_map_fraction_map (minpoly.monic hai)).mp
-        (minpoly.irreducible hai)) ?_ (Monic.map (algebraMap A K) (minpoly.monic hai))
+      ((Monic.irreducible_iff_irreducible_map_fraction_map hm).mp
+        (minpoly.irreducible hai)) ?_ (Monic.map (algebraMap A K) hm)
     simp only [aeval_map_algebraMap, aeval_algebraMap_eq_zero_iff, minpoly.aeval, f]
   have h : fl.roots.map ϕP = (fl.map ϕP).roots := by
     have h := (natDegree_eq_card_roots' (hn.splits (algebraMap B L a))).symm
-    rw [← hfe, natDegree_map, Monic.natDegree_map (minpoly.monic hai), Polynomial.map_map,
+    rw [← hfe, natDegree_map, Monic.natDegree_map hm, Polynomial.map_map,
       ← IsScalarTower.algebraMap_eq A K L,
-      ← isIntegralClosure_root_card_eq_ofMonic B L (minpoly.monic hai),
-      ← Monic.natDegree_map (minpoly.monic hai) (algebraMap A B)] at h
+      ← isIntegralClosure_root_card_eq_ofMonic B L hm,
+      ← Monic.natDegree_map hm (algebraMap A B)] at h
     exact roots_map_of_card_eq_natDegree h0 h
   rw [← h] at hbr
   rcases Multiset.mem_map.mp hbr with ⟨b, ⟨hbr, hb⟩⟩
