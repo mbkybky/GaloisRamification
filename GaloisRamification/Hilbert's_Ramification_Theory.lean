@@ -711,17 +711,17 @@ theorem residueGaloisHom_surjective [hn : Normal K L] :
       AlgHom.coe_coe, hc, aeval_map_algebraMap, ← hbz]
   have hfe : (Polynomial.map (algebraMap (𝓞 K) K) f) = minpoly K a.1 := by
     refine minpoly.eq_of_irreducible_of_monic
-      ((Monic.irreducible_iff_irreducible_map_fraction_map (minpoly.monic hai)).mp
-        (minpoly.irreducible hai)) ?_ (Monic.map (algebraMap (𝓞 K) K) (minpoly.monic hai))
+      ((Monic.irreducible_iff_irreducible_map_fraction_map hm).mp
+        (minpoly.irreducible hai)) ?_ (Monic.map (algebraMap (𝓞 K) K) hm)
     have h : a.1 = algebraMap (𝓞 L) L a := rfl
     rw [h]
     simp only [aeval_map_algebraMap, aeval_algebraMap_eq_zero_iff, minpoly.aeval, f]
   have h : fl.roots.map ϕP = (fl.map ϕP).roots := by
     have h := (natDegree_eq_card_roots' (hn.splits a.1)).symm
     have hc : (algebraMap K L).comp (algebraMap (𝓞 K) K) = algebraMap (𝓞 K) L := rfl
-    have he := isIntegralClosure_root_card_eq_ofMonic (𝓞 L) L (minpoly.monic hai)
-    rw [← hfe, natDegree_map, Monic.natDegree_map (minpoly.monic hai), Polynomial.map_map, hc, ← he,
-      ← Monic.natDegree_map (minpoly.monic hai) (algebraMap (𝓞 K) (𝓞 L))] at h
+    have he := hm.roots_card_eq_of_IsIntegralClosure (𝓞 L) L
+    rw [← hfe, natDegree_map, Monic.natDegree_map hm, Polynomial.map_map, hc, ← he,
+      ← Monic.natDegree_map hm (algebraMap (𝓞 K) (𝓞 L))] at h
     exact roots_map_of_card_eq_natDegree h0 h
   rw [← h] at hbr
   rcases Multiset.mem_map.mp hbr with ⟨b, ⟨hbr, hb⟩⟩

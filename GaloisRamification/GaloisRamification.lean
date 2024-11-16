@@ -119,6 +119,11 @@ theorem ne_bot_of_liesOver_of_ne_bot (hp : p ≠ ⊥) (P : Ideal B) [P.LiesOver 
   rw [hp]
   exact under_bot A B
 
+theorem IsDomain.of_bot_isPrime [hbp : (⊥ : Ideal A).IsPrime] : IsDomain A := by
+  have : A ≃+* (A ⧸ (⊥ : Ideal A)) := (RingEquiv.quotientBot A).symm
+  have : IsDomain (A ⧸ (⊥ : Ideal A)) := by exact (Quotient.isDomain_iff_prime ⊥).mpr hbp
+  exact Equiv.isDomain (RingEquiv.quotientBot A).symm
+
 end Ideal
 
 section primesOver
@@ -143,18 +148,18 @@ end primesOver
 
 section IsIntegral
 
-variable {A : Type*} [CommRing A] {p : Ideal A} [p.IsMaximal] {B : Type*}
-  [CommRing B] [Algebra A B] [Algebra.IsIntegral A B] (Q : primesOver p B)
+variable {A : Type*} [CommRing A] {p : Ideal A} [p.IsMaximal] {B : Type*} [CommRing B]
+  [Algebra A B] [NoZeroSMulDivisors A B] [Algebra.IsIntegral A B] (Q : primesOver p B)
 
 instance primesOver.isMaximal : IsMaximal Q.1 :=
   IsMaximal.of_liesOver_isMaximal Q.1 p
 
-variable (p) (B)
-
-theorem primesOver_ncard_ne_zero : (primesOver p B).ncard ≠ 0 := sorry
-
-theorem one_le_primesOver_ncard : 1 ≤ (primesOver p B).ncard :=
-  Nat.one_le_iff_ne_zero.mpr (primesOver_ncard_ne_zero p B)
+variable (A) (B) in
+lemma primesOver_bot [Nontrivial A] [IsDomain B] : primesOver (⊥ : Ideal A) B = {⊥} := by
+  ext p
+  refine ⟨fun ⟨_, ⟨h⟩⟩ ↦ p.eq_bot_of_comap_eq_bot h.symm, ?_⟩
+  rintro rfl
+  exact ⟨Ideal.bot_prime, bot_liesOber_bot A B⟩
 
 end IsIntegral
 
@@ -175,6 +180,25 @@ theorem coe_primesOverFinset {A : Type*} [CommRing A] {p : Ideal A} (hpb : p ≠
   exact (P.mem_normalizedFactors_iff (map_ne_bot_of_ne_bot hpb)).trans <| Iff.intro
     (fun ⟨hPp, h⟩ => ⟨hPp, ⟨hpm.eq_of_le (comap_ne_top _ hPp.ne_top) (le_comap_of_map_le h)⟩⟩)
     (fun ⟨hPp, h⟩ => ⟨hPp, map_le_of_le_comap h.1.le⟩)
+
+variable {A : Type*} [CommRing A] (p : Ideal A) [hpm : p.IsMaximal] (B : Type*) [CommRing B]
+  [IsDedekindDomain B] [Algebra A B] [NoZeroSMulDivisors A B] [Algebra.IsIntegral A B]
+
+theorem primesOver_finite : (primesOver p B).Finite := by
+  by_cases hpb : p = ⊥
+  · rw [hpb] at hpm ⊢
+    have : IsDomain A := sorry
+    rw [primesOver_bot A B]
+    exact Set.finite_singleton ⊥
+  · rw [← coe_primesOverFinset hpb B]
+    exact (primesOverFinset p B).finite_toSet
+
+theorem primesOver_ncard_ne_zero : (primesOver p B).ncard ≠ 0 := by
+  rcases exists_ideal_liesOver_maximal_of_isIntegral p B with ⟨P, hPm, hp⟩
+  exact Set.ncard_ne_zero_of_mem ⟨hPm.isPrime, hp⟩ (primesOver_finite p B)
+
+theorem one_le_primesOver_ncard : 1 ≤ (primesOver p B).ncard :=
+  Nat.one_le_iff_ne_zero.mpr (primesOver_ncard_ne_zero p B)
 
 end primesOverFinset
 
@@ -228,7 +252,7 @@ end MulAction
 section RamificationInertia
 
 variable {A B : Type*} [CommRing A] [IsDomain A] [IsIntegrallyClosed A] [CommRing B] [IsDomain B]
-  [IsIntegrallyClosed B] [Algebra A B] [Module.Finite A B] [NoZeroSMulDivisors A B]
+  [IsIntegrallyClosed B] [Algebra A B] [NoZeroSMulDivisors A B] [Module.Finite A B]
   (p : Ideal A) (P Q : Ideal B) [p.IsMaximal] [hPp : P.IsPrime] [hp : P.LiesOver p]
   [hQp : Q.IsPrime] [Q.LiesOver p]
   (K L : Type*) [Field K] [Field L] [Algebra A K] [IsFractionRing A K] [Algebra B L]
@@ -301,7 +325,7 @@ end RamificationInertia
 section fundamental_identity
 
 variable {A B : Type*} [CommRing A] [IsDedekindDomain A] [CommRing B] [IsDedekindDomain B]
-  [Algebra A B] [Module.Finite A B] [NoZeroSMulDivisors A B]
+  [Algebra A B] [NoZeroSMulDivisors A B] [Module.Finite A B]
   {p : Ideal A} (hpb : p ≠ ⊥) [p.IsMaximal] (P : Ideal B) [P.IsPrime] [hp : P.LiesOver p]
   (K L : Type*) [Field K] [Field L] [Algebra A K] [IsFractionRing A K] [Algebra B L]
   [IsFractionRing B L] [Algebra K L] [Algebra A L] [IsScalarTower A B L] [IsScalarTower A K L]
