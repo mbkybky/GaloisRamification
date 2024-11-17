@@ -52,12 +52,6 @@ open RingOfIntegers
 
 section preparation
 
-lemma inertiaDeg_algebra_tower {R S T : Type*} [CommRing R] [CommRing S] [CommRing T] [Algebra R S]
-  [Algebra S T] [Algebra R T] [IsScalarTower R S T] (p : Ideal R) (P : Ideal S) (I : Ideal T)
-  [p.IsMaximal] [P.IsMaximal] [P.LiesOver p] [I.LiesOver P] :
-  inertiaDeg (algebraMap R T) p I =
-  inertiaDeg (algebraMap R S) p P * inertiaDeg (algebraMap S T) P I := sorry
-
 variable (K : Type*) [Field K] {L : Type*} [Field L] [Algebra K L]
   (P : Ideal (𝓞 L)) (p : Ideal (𝓞 K))
 
@@ -731,16 +725,18 @@ theorem residueGaloisHom_surjective [hn : Normal K L] :
     rw [he, ← hfe, h, aeval_map_algebraMap, aeval_algebraMap_eq_zero_iff, aeval_def, ← eval_map,
       ← coe_aeval_eq_eval, (mem_roots_iff_aeval_eq_zero (map_monic_ne_zero hm)).mp hbr]
   let ε := IntermediateField.adjoin.powerBasis (hn.isIntegral a.1)
-  use (ε.lift b.1 h).fieldRangeAlgEquiv.liftNormal L
+  let τ : _ ≃ₐ[K] (ε.lift ((algebraMap (𝓞 L) L) b) h).fieldRange :=
+    AlgEquiv.ofInjectiveField (ε.lift (algebraMap (𝓞 L) L b) h)
+  use τ.liftNormal L
   refine AlgEquiv.coe_algHom_injective ((@PowerBasis.liftEquiv E _ F _ _ E _ _ e).injective ?_)
   apply Subtype.val_inj.mp
   rw [PowerBasis.liftEquiv_apply_coe, AlgHom.coe_coe]
   simp only [← ha, Equiv.toFun_as_coe, AlgEquiv.toAlgHom_eq_coe, AlgHom.coe_coe]
-  show ϕP ((RingOfIntegers.mapAlgEquiv ((ε.lift b.1 h).fieldRangeAlgEquiv.liftNormal L)) a) = β.1
+  show ϕP ((RingOfIntegers.mapAlgEquiv (τ.liftNormal L)) a) = β.1
   rw [← hb]
   congr
-  exact Subtype.val_inj.mp <| ((ε.lift b.1 h).fieldRangeAlgEquiv.liftNormal_commutes L
-    (AdjoinSimple.gen K a.1)).trans (ε.lift_gen b.1 h)
+  exact Subtype.val_inj.mp <| (τ.liftNormal_commutes L (AdjoinSimple.gen K a.1)).trans <|
+    ε.lift_gen b.1 h
 
 
 
