@@ -109,7 +109,7 @@ theorem map_ne_bot_of_ne_bot {I : Ideal A} (h : I ≠ ⊥) : map (algebraMap A B
 theorem under_bot : under A (⊥ : Ideal B) = ⊥ :=
   comap_bot_of_injective (algebraMap A B) (NoZeroSMulDivisors.algebraMap_injective A B)
 
-instance bot_liesOber_bot : (⊥ : Ideal B).LiesOver (⊥ : Ideal A) where
+instance bot_liesOver_bot : (⊥ : Ideal B).LiesOver (⊥ : Ideal A) where
   over := (under_bot A B).symm
 
 variable {A} {B} in
@@ -119,10 +119,9 @@ theorem ne_bot_of_liesOver_of_ne_bot (hp : p ≠ ⊥) (P : Ideal B) [P.LiesOver 
   rw [hp]
   exact under_bot A B
 
-theorem IsDomain.of_bot_isPrime [hbp : (⊥ : Ideal A).IsPrime] : IsDomain A := by
-  have : A ≃+* (A ⧸ (⊥ : Ideal A)) := (RingEquiv.quotientBot A).symm
-  have : IsDomain (A ⧸ (⊥ : Ideal A)) := by exact (Quotient.isDomain_iff_prime ⊥).mpr hbp
-  exact Equiv.isDomain (RingEquiv.quotientBot A).symm
+theorem IsDomain.of_bot_isPrime (A : Type*) [Ring A] [hbp : (⊥ : Ideal A).IsPrime] : IsDomain A :=
+  @NoZeroDivisors.to_isDomain A _
+    ⟨1, 0, fun h => hbp.ne_top ((eq_top_iff_one ⊥).mpr h)⟩ ⟨fun h => hbp.2 h⟩
 
 end Ideal
 
@@ -159,7 +158,7 @@ lemma primesOver_bot [Nontrivial A] [IsDomain B] : primesOver (⊥ : Ideal A) B 
   ext p
   refine ⟨fun ⟨_, ⟨h⟩⟩ ↦ p.eq_bot_of_comap_eq_bot h.symm, ?_⟩
   rintro rfl
-  exact ⟨Ideal.bot_prime, bot_liesOber_bot A B⟩
+  exact ⟨Ideal.bot_prime, bot_liesOver_bot A B⟩
 
 end IsIntegral
 
@@ -169,8 +168,6 @@ open scoped Classical in
 noncomputable abbrev primesOverFinset {A : Type*} [CommRing A] (p : Ideal A) (B : Type*) [CommRing B]
     [IsDedekindDomain B] [Algebra A B] : Finset (Ideal B) :=
   (factors (p.map (algebraMap A B))).toFinset
-
--- #find_home primesOverFinset
 
 theorem coe_primesOverFinset {A : Type*} [CommRing A] {p : Ideal A} (hpb : p ≠ ⊥) [hpm : p.IsMaximal]
     (B : Type*) [CommRing B] [IsDedekindDomain B] [Algebra A B] [NoZeroSMulDivisors A B] : primesOverFinset p B = primesOver p B := by
@@ -205,7 +202,7 @@ end primesOverFinset
 namespace Ideal
 
 open scoped Classical in
-/-- In the case of Galois extension, it can be seen from the Theorem `ramificationIdx_eq_of_IsGalois`
+/-- In the case of Galois extension, it can be seen from the theorem `ramificationIdx_eq_of_IsGalois`
   that all `ramificationIdx` are the same, which we define as the `Ideal.ramificationIdxIn`. -/
 noncomputable def ramificationIdxIn {A : Type*} [CommRing A] (p : Ideal A)
     (B : Type*) [CommRing B] [Algebra A B] : ℕ :=
@@ -213,7 +210,7 @@ noncomputable def ramificationIdxIn {A : Type*} [CommRing A] (p : Ideal A)
     p.ramificationIdx (algebraMap A B) h.choose else 0
 
 open scoped Classical in
-/-- In the case of Galois extension, it can be seen from the Theorem `inertiaDeg_eq_of_IsGalois`
+/-- In the case of Galois extension, it can be seen from the theorem `inertiaDeg_eq_of_IsGalois`
   that all `inertiaDeg` are the same, which we define as the `Ideal.inertiaDegIn`. -/
 noncomputable def inertiaDegIn {A : Type*} [CommRing A] (p : Ideal A)
     (B : Type*) [CommRing B] [Algebra A B] : ℕ :=
