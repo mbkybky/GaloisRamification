@@ -27,20 +27,7 @@ section Galois
 open IntermediateField AlgEquiv QuotientGroup
 
 variable {K E L : Type*} [Field K] [Field E] [Field L] [Algebra K E] [Algebra K L] [Algebra E L]
-  [IsScalarTower K E L]
-
-/-- The `AlgEquiv` induced by an `AlgHom` from the domain of definition to the `fieldRange`. -/
-noncomputable def AlgHom.fieldRangeAlgEquiv (σ : E →ₐ[K] L) :
-    E ≃ₐ[K] σ.fieldRange where
-  toFun x := ⟨σ x, by simp only [AlgHom.mem_fieldRange, exists_apply_eq_apply]⟩
-  invFun y := Classical.choose (AlgHom.mem_fieldRange.mp y.2)
-  left_inv x := σ.toRingHom.injective (Classical.choose_spec (AlgHom.mem_fieldRange.mp ⟨x, rfl⟩))
-  right_inv y := Subtype.val_inj.mp (Classical.choose_spec (mem_fieldRange.mp y.2))
-  map_mul' x y := Subtype.val_inj.mp (σ.toRingHom.map_mul x y)
-  map_add' x y := Subtype.val_inj.mp (σ.toRingHom.map_add x y)
-  commutes' x := Subtype.val_inj.mp (commutes σ x)
-
-variable [FiniteDimensional K L]
+ [FiniteDimensional K L]
 
 /-- If `H` is a subgroup of `Gal(L/K)`, then `Gal(L / fixedField H)` is isomorphic to `H`. -/
 def IntermediateField.subgroup_equiv_aut (H : Subgroup (L ≃ₐ[K] L)) :
@@ -132,3 +119,24 @@ theorem roots_map_of_card_eq_natDegree {A B : Type*} [CommRing A] [CommRing B]
     by simpa only [card_map, hroots] using (card_roots' (p.map f)).trans (natDegree_map_le f p)
 
 end Polynomial
+
+section AKLB
+
+variable (A B C : Type*) [CommRing A] [IsDomain A] [CommRing B] [IsDomain B] [Algebra A B]
+  [CommRing C] [IsDomain C] [Algebra A C] [Algebra B C] [IsScalarTower A B C]
+  [NoZeroSMulDivisors A C]
+
+include C in
+theorem noZeroSMulDivisors_tower_bot : NoZeroSMulDivisors A B := by
+  sorry
+
+variable (A B K L : Type*) [CommRing A] [CommRing B] [IsDomain B] [Algebra A B]
+  [Field K] [Field L] [Algebra A K] [IsFractionRing A K] [Algebra B L]
+  [Algebra K L] [Algebra A L] [IsScalarTower A B L] [IsScalarTower A K L]
+
+include K L in
+theorem noZeroSMulDivisors_of_isFractionRing_algebra : NoZeroSMulDivisors A B := by
+  have := NoZeroSMulDivisors.trans A K L
+  exact NoZeroSMulDivisors.of_field_isFractionRing A B K L
+
+end AKLB
