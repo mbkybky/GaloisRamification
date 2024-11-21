@@ -775,21 +775,21 @@ noncomputable def aut_quoutient_inertiaGroup_equiv_residueField_aut [Normal K L]
     QuotientGroup.quotientKerEquivOfSurjective _ (residueGaloisHom_surjective p P)
 
 /-- The intermediate field fixed by `inertiaGroup K P`. -/
-def inertiaField' (K : Type*) {L : Type*} [Field K] [Field L] [Algebra K L]
+def inertiaFieldAux (K : Type*) {L : Type*} [Field K] [Field L] [Algebra K L]
     (P : Ideal (𝓞 L)) [P.IsMaximal] : IntermediateField K L :=
   fixedField (inertiaGroup K P)
 
-/-- `inertiaField' K P` is a Number Field. -/
-instance inertiaField_NumberField : NumberField (inertiaField' K P) :=
-  of_intermediateField (inertiaField' K P)
+/-- `inertiaFieldAux K P` is a Number Field. -/
+instance inertiaField_NumberField : NumberField (inertiaFieldAux K P) :=
+  of_intermediateField (inertiaFieldAux K P)
 
-/-- The ideal equal to the intersection of `P` and `inertiaField' p P`. -/
-abbrev inertiaIdeal' (K : Type*) {L : Type*} [Field K] [Field L]
-    [Algebra K L] (P : Ideal (𝓞 L)) [P.IsMaximal] : Ideal (𝓞 (inertiaField' K P)) :=
-  idealUnder (inertiaField' K P) P
+/-- The ideal equal to the intersection of `P` and `inertiaFieldAux p P`. -/
+abbrev inertiaIdealAux (K : Type*) {L : Type*} [Field K] [Field L]
+    [Algebra K L] (P : Ideal (𝓞 L)) [P.IsMaximal] : Ideal (𝓞 (inertiaFieldAux K P)) :=
+  idealUnder (inertiaFieldAux K P) P
 
-/-- `inertiaIdeal' p P` is a maximal Ideal. -/
-instance inertiaideal_IsMaxiaml : IsMaximal (inertiaIdeal' K P) := idealUnder.IsMaximal P
+/-- `inertiaIdealAux p P` is a maximal Ideal. -/
+instance inertiaideal_IsMaxiaml : IsMaximal (inertiaIdealAux K P) := idealUnder.IsMaximal P
 
 
 
@@ -797,24 +797,24 @@ instance inertiaideal_IsMaxiaml : IsMaximal (inertiaIdeal' K P) := idealUnder.Is
 
 variable [IsGalois K L]
 
-/-- `(inertiaField' p P) / K` is a Galois extension. -/
+/-- `(inertiaFieldAux p P) / K` is a Galois extension. -/
 theorem inertiaField_isGalois_of_unique {K L : Type*} [Field K] [Field L]
     [Algebra K L] [IsGalois K L] (p : Ideal (𝓞 K)) (P : Ideal (𝓞 L)) [p.IsMaximal]
-    [P.IsMaximal] [P unique_lies_over p] : IsGalois K (inertiaField' K P) :=
+    [P.IsMaximal] [P unique_lies_over p] : IsGalois K (inertiaFieldAux K P) :=
   letI := inertiaGroup_normal p P
   of_fixedField_normal_subgroup (inertiaGroup K P)
 
-/-- The Galois group `Gal((inertiaField' p P) / K)` is isomorphic to the
+/-- The Galois group `Gal((inertiaFieldAux p P) / K)` is isomorphic to the
 Galois group `Gal((𝓞 L) ⧸ P) / (𝓞 K) ⧸ p)`. -/
 noncomputable def inertiaField_aut_equiv_ResidueField_aut :
-    ((inertiaField' K P) ≃ₐ[K] (inertiaField' K P)) ≃* (((𝓞 L) ⧸ P) ≃ₐ[(𝓞 K) ⧸ p] ((𝓞 L) ⧸ P)) :=
+    ((inertiaFieldAux K P) ≃ₐ[K] (inertiaFieldAux K P)) ≃* (((𝓞 L) ⧸ P) ≃ₐ[(𝓞 K) ⧸ p] ((𝓞 L) ⧸ P)) :=
   letI := inertiaGroup_normal p P
   (normal_aut_equiv_quotient (inertiaGroup K P)).trans <|
     aut_quoutient_inertiaGroup_equiv_residueField_aut p P
 
-/-- The Galois group `Gal(L / (inertiaField' p P))` is isomorphic to `inertiaGroup K P`. -/
+/-- The Galois group `Gal(L / (inertiaFieldAux p P))` is isomorphic to `inertiaGroup K P`. -/
 def inertiaField_aut_tower_top_equiv_inertiaGroup_of_unique :
-  (L ≃ₐ[inertiaField' K P] L) ≃* inertiaGroup K P := subgroup_equiv_aut (inertiaGroup K P)
+  (L ≃ₐ[inertiaFieldAux K P] L) ≃* inertiaGroup K P := subgroup_equiv_aut (inertiaGroup K P)
 
 /-- The extension degree `[L : K]` is equal to the product of the ramification index
 and the inertia degree of `p` in `L`. -/
@@ -825,21 +825,21 @@ theorem finrank_eq_ramificationIdx_mul_inertiaDeg (P : Ideal (𝓞 L))
   rw [unique_primes_over_card_eq_one p P, one_mul] at h
   exact h
 
-/-- The extension degree `[inertiaField' p P : K]` is equal to the inertia degree of `p` in `L`. -/
+/-- The extension degree `[inertiaFieldAux p P : K]` is equal to the inertia degree of `p` in `L`. -/
 theorem finrank_bot_inertiaField_eq_inertiaDeg_of_unique :
-    finrank K (inertiaField' K P) = inertiaDeg_of_isGalois p L := by
+    finrank K (inertiaFieldAux K P) = inertiaDeg_of_isGalois p L := by
   letI := inertiaField_isGalois_of_unique p P
   rw [← inertiaDeg_eq_inertiaDeg_of_isGalois p P, inertiaDeg, ← card_aut_eq_finrank]
   rw [Fintype.card_of_bijective (inertiaField_aut_equiv_ResidueField_aut p P).bijective]
   rw [card_aut_eq_finrank, dif_pos hp.over.symm]
 
-/-- The extension degree `[L : inertiaField' p P]` is equal to the
+/-- The extension degree `[L : inertiaFieldAux p P]` is equal to the
 ramification index of `p` in `L`. -/
 theorem finrank_inertiaField_top_eq_ramificationIdx_of_unique :
-    finrank (inertiaField' K P) L = ramificationIdx_of_isGalois p L := by
-  have h : finrank K (inertiaField' K P) ≠ 0 := ne_of_gt finrank_pos
+    finrank (inertiaFieldAux K P) L = ramificationIdx_of_isGalois p L := by
+  have h : finrank K (inertiaFieldAux K P) ≠ 0 := ne_of_gt finrank_pos
   apply mul_left_cancel₀ h
-  rw [finrank_mul_finrank K (inertiaField' K P) L, finrank_eq_ramificationIdx_mul_inertiaDeg p P,
+  rw [finrank_mul_finrank K (inertiaFieldAux K P) L, finrank_eq_ramificationIdx_mul_inertiaDeg p P,
     finrank_bot_inertiaField_eq_inertiaDeg_of_unique p P, mul_comm]
 
 theorem inertiaGroup_card_eq_ramificationIdx_of_unique :
@@ -849,36 +849,36 @@ theorem inertiaGroup_card_eq_ramificationIdx_of_unique :
 
 theorem inertiaGroup_inertiaideal_top (K : Type*) {L : Type*} [Field K] [NumberField K] [Field L]
     [NumberField L] [Algebra K L] (P : Ideal (𝓞 L)) [P.IsMaximal] :
-    inertiaGroup (inertiaField' K P) P = ⊤ := by
-  refine (Subgroup.eq_top_iff' (inertiaGroup (inertiaField' K P) P)).mpr (fun σ x ↦ ?_)
+    inertiaGroup (inertiaFieldAux K P) P = ⊤ := by
+  refine (Subgroup.eq_top_iff' (inertiaGroup (inertiaFieldAux K P) P)).mpr (fun σ x ↦ ?_)
   let τ := (subgroup_equiv_aut (inertiaGroup K P)).toFun σ
   have hst : (mapRingHom σ) x = (mapRingHom τ.1) x := rfl
   rw [hst, τ.2 x]
 
 theorem inertiaDeg_over_inertiaideal_eq_one_of_unique (p : Ideal (𝓞 K)) (P : Ideal (𝓞 L))
     [P.IsMaximal] [P unique_lies_over p]  :
-    inertiaDeg_of_isGalois (inertiaIdeal' K P) L = 1 := by
-  letI := ideal_unique_lies_over_tower_top p (inertiaIdeal' K P) P
-  letI := inertiaGroup_normal (inertiaIdeal' K P) P
-  rw [← inertiaDeg_eq_inertiaDeg_of_isGalois (inertiaIdeal' K P) P, inertiaDeg, dif_pos rfl]
+    inertiaDeg_of_isGalois (inertiaIdealAux K P) L = 1 := by
+  letI := ideal_unique_lies_over_tower_top p (inertiaIdealAux K P) P
+  letI := inertiaGroup_normal (inertiaIdealAux K P) P
+  rw [← inertiaDeg_eq_inertiaDeg_of_isGalois (inertiaIdealAux K P) P, inertiaDeg, dif_pos rfl]
   rw [← card_aut_eq_finrank, ← Fintype.card_of_bijective <| MulEquiv.bijective <|
-    aut_quoutient_inertiaGroup_equiv_residueField_aut (inertiaIdeal' K P) P]
-  have hm := Subgroup.card_eq_card_quotient_mul_card_subgroup (inertiaGroup (inertiaField' K P) P)
-  nth_rw 1 [(Subgroup.card_eq_iff_eq_top (inertiaGroup (inertiaField' K P) P)).mpr <|
-    inertiaGroup_inertiaideal_top K P, ← one_mul (Nat.card (L ≃ₐ[inertiaField' K P] L))] at hm
+    aut_quoutient_inertiaGroup_equiv_residueField_aut (inertiaIdealAux K P) P]
+  have hm := Subgroup.card_eq_card_quotient_mul_card_subgroup (inertiaGroup (inertiaFieldAux K P) P)
+  nth_rw 1 [(Subgroup.card_eq_iff_eq_top (inertiaGroup (inertiaFieldAux K P) P)).mpr <|
+    inertiaGroup_inertiaideal_top K P, ← one_mul (Nat.card (L ≃ₐ[inertiaFieldAux K P] L))] at hm
   simp only [Nat.card_eq_fintype_card] at hm
   exact mul_right_cancel₀ Fintype.card_ne_zero hm.symm
 
 theorem ramificationIdx_over_inertiaideal_eq_ramificationIdx_of_unique :
-    ramificationIdx_of_isGalois (inertiaIdeal' K P) L = ramificationIdx_of_isGalois p L := by
-  letI := ideal_unique_lies_over_tower_top p (inertiaIdeal' K P) P
+    ramificationIdx_of_isGalois (inertiaIdealAux K P) L = ramificationIdx_of_isGalois p L := by
+  letI := ideal_unique_lies_over_tower_top p (inertiaIdealAux K P) P
   rw [← finrank_inertiaField_top_eq_ramificationIdx_of_unique p P]
-  rw [finrank_eq_ramificationIdx_mul_inertiaDeg (inertiaIdeal' K P) P]
+  rw [finrank_eq_ramificationIdx_mul_inertiaDeg (inertiaIdealAux K P) P]
   rw [inertiaDeg_over_inertiaideal_eq_one_of_unique p P, mul_one]
 
 theorem ramificationIdx_below_inertiaideal_eq_one_of_unique :
-    ramificationIdx_of_isGalois p (inertiaField' K P) = 1 := by
-  let Pt := idealUnder (inertiaField' K P) P
+    ramificationIdx_of_isGalois p (inertiaFieldAux K P) = 1 := by
+  let Pt := idealUnder (inertiaFieldAux K P) P
   letI := inertiaField_isGalois_of_unique p P
   have h := ramificationIdx_algebra_tower (map_isMaximal_ne_bot Pt L)
     (map_isMaximal_ne_bot p L) (map_le_iff_le_comap.mpr (le_of_eq rfl))
@@ -891,10 +891,10 @@ theorem ramificationIdx_below_inertiaideal_eq_one_of_unique :
     (IsMaximal.isPrime inferInstance) (map_le_of_le_comap (le_of_eq hp.over))) h.symm
 
 theorem inertiaDeg_below_inertiaideal_eq_inertiaDeg_of_unique :
-    inertiaDeg_of_isGalois p (inertiaField' K P) = inertiaDeg_of_isGalois p L := by
+    inertiaDeg_of_isGalois p (inertiaFieldAux K P) = inertiaDeg_of_isGalois p L := by
   letI := inertiaField_isGalois_of_unique p P
-  have h := inertiaDeg_algebra_tower p (inertiaIdeal' K P) P
-  nth_rw 1 [inertiaDeg_eq_inertiaDeg_of_isGalois (inertiaIdeal' K P) P,
+  have h := inertiaDeg_algebra_tower p (inertiaIdealAux K P) P
+  nth_rw 1 [inertiaDeg_eq_inertiaDeg_of_isGalois (inertiaIdealAux K P) P,
     inertiaDeg_over_inertiaideal_eq_one_of_unique p P, mul_one] at h
   simp_rw [inertiaDeg_eq_inertiaDeg_of_isGalois] at h
   exact h.symm
