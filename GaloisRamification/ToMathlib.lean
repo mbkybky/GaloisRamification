@@ -85,7 +85,7 @@ open Multiset
 
 /-- If `L` be an extension of `R`, then for a monic polynomial `p : R[X]`, the roots of `p`in `L`
 are equal to the roots of `p` in the integral closure of `R` in `L`. -/
-theorem Monic.roots_map_eq_of_IsIntegralClosure {p : R[X]} (hp : p.Monic):
+theorem Monic.roots_map_eq_of_isIntegralClosure {p : R[X]} (hp : p.Monic):
     (p.map (algebraMap R S)).roots.map (algebraMap S L) = (p.map (algebraMap R L)).roots := by
   classical
   ext x
@@ -106,17 +106,22 @@ theorem Monic.roots_map_eq_of_IsIntegralClosure {p : R[X]} (hp : p.Monic):
 
 /-- If `L` be an extension of `R`, then for a monic polynomial `p : R[X]`, the number of roots
 of `p` in `L` is equal to the number of roots of `p` in the integral closure of `R` in `L`. -/
-theorem Monic.roots_card_eq_of_IsIntegralClosure {p : R[X]} (hp : p.Monic) :
+theorem Monic.roots_card_eq_of_isIntegralClosure {p : R[X]} (hp : p.Monic) :
     card (p.map (algebraMap R S)).roots = card (p.map (algebraMap R L)).roots := by
-  rw [← roots_map_eq_of_IsIntegralClosure S L hp, card_map]
+  rw [← roots_map_eq_of_isIntegralClosure S L hp, card_map]
 
 /-- A variant of the theorem `Polynomial.roots_map_of_injective_of_card_eq_natDegree` that
   replaces the injectivity condition with the condition `Polynomial.map f p ≠ 0`. -/
-theorem roots_map_of_card_eq_natDegree {A B : Type*} [CommRing A] [CommRing B]
+theorem roots_map_of_map_ne_zero_of_card_eq_natDegree {A B : Type*} [CommRing A] [CommRing B]
     [IsDomain A] [IsDomain B] {p : A[X]} {f : A →+* B} (h : p.map f ≠ 0)
     (hroots : card p.roots = p.natDegree) : p.roots.map f  = (p.map f).roots :=
   eq_of_le_of_card_le (map_roots_le h) <|
     by simpa only [card_map, hroots] using (card_roots' (p.map f)).trans (natDegree_map_le f p)
+
+theorem Monic.roots_map_of_card_eq_natDegree {A B : Type*} [CommRing A] [CommRing B]
+    [IsDomain A] [IsDomain B] {p : A[X]} (hm : p.Monic) {f : A →+* B}
+    (hroots : card p.roots = p.natDegree) : p.roots.map f  = (p.map f).roots :=
+  roots_map_of_map_ne_zero_of_card_eq_natDegree (map_monic_ne_zero hm) hroots
 
 end Polynomial
 

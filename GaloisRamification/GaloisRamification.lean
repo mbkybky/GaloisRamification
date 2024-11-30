@@ -377,6 +377,7 @@ def decompositionField : IntermediateField K L :=
 def decompositionRing : Subalgebra A B :=
   ((decompositionField p P K L).toSubalgebra.restrictScalars A).comap (IsScalarTower.toAlgHom A B L)
 
+@[variable_alias]
 class IsDecompositionRing (D : Type*) [CommRing D] where
   [isDedekindDomain : IsDedekindDomain D]
   [algebra_bot : Algebra A D] [module_finite : Module.Finite A D]
@@ -565,9 +566,9 @@ theorem quotientAlgEquivHom_surjective :
   have h : fl.roots.map ϕP = (fl.map ϕP).roots := by
     have h := (natDegree_eq_card_roots' (hn.splits (algebraMap B L a))).symm
     rw [← hfe, natDegree_map, hm.natDegree_map, Polynomial.map_map,
-      ← IsScalarTower.algebraMap_eq A K L, ← hm.roots_card_eq_of_IsIntegralClosure B L,
+      ← IsScalarTower.algebraMap_eq A K L, ← hm.roots_card_eq_of_isIntegralClosure B L,
       ← hm.natDegree_map (algebraMap A B)] at h
-    exact roots_map_of_card_eq_natDegree h0 h
+    exact roots_map_of_card_eq_natDegree_of_map_ne_zero h0 h
   rw [← h] at hbr
   rcases Multiset.mem_map.mp hbr with ⟨b, ⟨hbr, hb⟩⟩
   have h : aeval (algebraMap B L b) (minpoly K (AdjoinSimple.gen K (algebraMap B L a))) = 0 := by
