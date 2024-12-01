@@ -5,7 +5,7 @@ Authors: Yongle Hu, Jiedong Jiang
 -/
 import Mathlib.Tactic
 import Mathlib.NumberTheory.NumberField.Norm
-import Mathlib.NumberTheory.RamificationInertia
+import Mathlib.NumberTheory.RamificationInertia.Basic
 
 import GaloisRamification.ToMathlib
 
@@ -713,10 +713,10 @@ theorem residueGaloisHom_surjective [hn : Normal K L] :
   have h : fl.roots.map ϕP = (fl.map ϕP).roots := by
     have h := (natDegree_eq_card_roots' (hn.splits a.1)).symm
     have hc : (algebraMap K L).comp (algebraMap (𝓞 K) K) = algebraMap (𝓞 K) L := rfl
-    have he := hm.roots_card_eq_of_IsIntegralClosure (𝓞 L) L
+    have he := hm.roots_card_eq_of_isIntegralClosure (𝓞 L) L
     rw [← hfe, natDegree_map, Monic.natDegree_map hm, Polynomial.map_map, hc, ← he,
       ← Monic.natDegree_map hm (algebraMap (𝓞 K) (𝓞 L))] at h
-    exact roots_map_of_card_eq_natDegree h0 h
+    exact roots_map_of_map_ne_zero_of_card_eq_natDegree ϕP h0 h
   rw [← h] at hbr
   rcases Multiset.mem_map.mp hbr with ⟨b, ⟨hbr, hb⟩⟩
   have h : aeval b.1 (minpoly K (AdjoinSimple.gen K a.1)) = 0 := by
@@ -809,7 +809,7 @@ Galois group `Gal((𝓞 L) ⧸ P) / (𝓞 K) ⧸ p)`. -/
 noncomputable def inertiaField_aut_equiv_ResidueField_aut :
     ((inertiaFieldAux K P) ≃ₐ[K] (inertiaFieldAux K P)) ≃* (((𝓞 L) ⧸ P) ≃ₐ[(𝓞 K) ⧸ p] ((𝓞 L) ⧸ P)) :=
   letI := inertiaGroup_normal p P
-  (normal_aut_equiv_quotient (inertiaGroup K P)).trans <|
+  (normalAutEquivQuotient (inertiaGroup K P)).symm.trans <|
     aut_quoutient_inertiaGroup_equiv_residueField_aut p P
 
 /-- The Galois group `Gal(L / (inertiaFieldAux p P))` is isomorphic to `inertiaGroup K P`. -/

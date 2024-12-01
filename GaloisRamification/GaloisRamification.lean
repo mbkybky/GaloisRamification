@@ -3,7 +3,7 @@ Copyright (c) 2024 Yongle Hu. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yongle Hu
 -/
-import Mathlib.NumberTheory.RamificationInertia
+import Mathlib.NumberTheory.RamificationInertia.Basic
 import Mathlib.RingTheory.IntegralClosure.IntegralRestrict
 
 import GaloisRamification.ToMathlib
@@ -373,35 +373,10 @@ open IntermediateField FiniteDimensional
 def decompositionField : IntermediateField K L :=
   IntermediateField.fixedField (decompositionGroup p P K L)
 
-/-- The decomposition field of `P` over `K` is the fixed field of `decompositionGroup p P`. -/
-def decompositionRing : Subalgebra A B :=
-  ((decompositionField p P K L).toSubalgebra.restrictScalars A).comap (IsScalarTower.toAlgHom A B L)
-
-@[variable_alias]
-class IsDecompositionRing (D : Type*) [CommRing D] where
-  [isDedekindDomain : IsDedekindDomain D]
-  [algebra_bot : Algebra A D] [module_finite : Module.Finite A D]
-  [algebra_decompositionField : Algebra D (decompositionField p P K L)]
-  [isFractionRing : IsFractionRing D (decompositionField p P K L)]
-  [isScalarTower_bot : IsScalarTower A D (decompositionField p P K L)]
-  [algebra_top : Algebra D B] [algebra_field : Algebra D L]
-  [isScalarTower_top : IsScalarTower D B L]
-  [isScalarTower_decompositionField : IsScalarTower D (decompositionField p P K L) L]
-  [isScalarTower : IsScalarTower A D B]
-
-attribute [instance] IsDecompositionRing.isDedekindDomain IsDecompositionRing.algebra_bot
-  IsDecompositionRing.module_finite IsDecompositionRing.algebra_decompositionField
-  IsDecompositionRing.isFractionRing IsDecompositionRing.isScalarTower_bot
-  IsDecompositionRing.algebra_top IsDecompositionRing.algebra_field
-  IsDecompositionRing.isScalarTower_top IsDecompositionRing.isScalarTower_decompositionField
-  IsDecompositionRing.isScalarTower
-
-instance : IsDecompositionRing p P K L (decompositionRing p P K L) := sorry
-
-variable {p P K L} (D : Type*) [CommRing D] [IsDecompositionRing p P K L D]
-
-/-- The ideal equal to the intersection of `P` and `decompositionField p P`. -/
-abbrev decompositionIdeal : Ideal D := P.under D
+variable {D : Type*} [CommRing D] [IsDedekindDomain D]
+  [Algebra A D] [Module.Finite A D] [Algebra D (decompositionField p P K L)]
+  [IsFractionRing D (decompositionField p P K L)] [IsScalarTower A D (decompositionField p P K L)]
+  [Algebra D B] [Algebra D L] [IsScalarTower D B L] [IsScalarTower D (decompositionField p P K L) L] [IsScalarTower A D B] (Pd : Ideal D)
 
 /-
 theorem decompositionGroup_card_eq_ramificationIdx_mul_inertiaDeg [IsGalois K L] :
