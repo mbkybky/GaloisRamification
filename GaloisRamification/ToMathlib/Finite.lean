@@ -31,7 +31,6 @@ def Module.Finite.finiteOfFinite {R M : Type*} [CommRing R] [Finite R] [AddCommM
   sorry -/
 
 variable {R : Type*} [CommRing R] [h : Module.Finite ℤ R]
-variable {R : Type*} [CommRing R] [h : Module.Finite ℤ R]
 
 theorem Ideal.Quotient.finite_of_module_finite_int [IsDomain R]{I : Ideal R} (hp : I ≠ ⊥) :
     Finite (R ⧸ I) := by
