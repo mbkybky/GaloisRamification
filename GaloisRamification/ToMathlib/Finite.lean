@@ -32,7 +32,7 @@ def Module.Finite.finiteOfFinite {R M : Type*} [CommRing R] [Finite R] [AddCommM
 
 variable {R : Type*} [CommRing R] [h : Module.Finite ℤ R]
 
-theorem Ideal.Quotient.finite_of_module_finite_int [IsDomain R]{I : Ideal R} (hp : I ≠ ⊥) :
+theorem Ideal.Quotient.finite_of_module_finite_int [IsDomain R] {I : Ideal R} (hp : I ≠ ⊥) :
     Finite (R ⧸ I) := by
   have : Module.Finite (ℤ ⧸ I.comap (algebraMap ℤ R)) (R ⧸ I) :=
     Module.Finite.of_restrictScalars_finite ℤ (ℤ ⧸ I.comap (algebraMap ℤ R)) (R ⧸ I)
