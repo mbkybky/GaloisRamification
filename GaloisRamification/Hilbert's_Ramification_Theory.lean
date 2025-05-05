@@ -178,16 +178,16 @@ variable {K L : Type*} [Field K] [Field L] [NumberField L] [Algebra K L] {E : Ty
   [Algebra K E] [Algebra E L] [IsScalarTower K E L]
   (p : Ideal (𝓞 K)) (𝔓 : Ideal (𝓞 E)) (P : Ideal (𝓞 L))
 
-omit [NumberField L] in
+/- omit [NumberField L] in
 theorem ideal_unique_lies_over.trans [hp : 𝔓 unique_lies_over p] [hP : P unique_lies_over 𝔓] :
   P unique_lies_over p := { ideal_lies_over.trans p 𝔓 P with
     unique := fun Q _ _ ↦
       letI := ideal_lies_over_tower_bot p (idealUnder E Q) Q
       letI := ideal_lies_over.mk (hp.unique (idealUnder E Q)).symm
       hP.unique Q
-}
+} -/
 
-theorem ideal_unique_lies_over_tower_bot [hp : P unique_lies_over p] [hP : P lies_over 𝔓] :
+/- theorem ideal_unique_lies_over_tower_bot [hp : P unique_lies_over p] [hP : P lies_over 𝔓] :
   𝔓 unique_lies_over p := { ideal_lies_over_tower_bot p 𝔓 P with
     unique := by
       intro 𝔔 _ _
@@ -195,7 +195,7 @@ theorem ideal_unique_lies_over_tower_bot [hp : P unique_lies_over p] [hP : P lie
       letI := ideal_lies_over.trans p 𝔔 Q
       letI := hp.unique Q
       rw [hq.over, hp.unique Q, hP.over]
-}
+} -/
 
 theorem ideal_unique_lies_over_tower_top [𝔓.IsMaximal] [hP : P unique_lies_over p]
   [𝔓 lies_over p] : P unique_lies_over 𝔓 where
@@ -216,12 +216,12 @@ instance IntermediateField_ideal_lies_over : (idealUnder E P) lies_over p :=
 theorem ideal_comap_intermediateField : p = idealUnder K (idealUnder E P) :=
   (IntermediateField_ideal_lies_over p P E).over
 
-variable {K L : Type*} [Field K] [Field L] [NumberField L] [Algebra K L]
+/- variable {K L : Type*} [Field K] [Field L] [NumberField L] [Algebra K L]
   (p : Ideal (𝓞 K)) (P : Ideal (𝓞 L)) [p.IsMaximal] [P.IsMaximal]
   [P unique_lies_over p] (E : IntermediateField K L)
 
 instance IntermediateField_ideal_unique_lies_over  : (idealUnder E P) unique_lies_over p :=
-  ideal_unique_lies_over_tower_bot p (idealUnder E P) P
+  ideal_unique_lies_over_tower_bot p (idealUnder E P) P -/
 
 end preparation
 
@@ -480,12 +480,13 @@ instance Gal_MulAction_primes (L : Type*) [Field L] [NumberField L] [Algebra K L
 theorem Gal_MulAction_primes_mk_coe (σ : L ≃ₐ[K] L) :
   (σ • primes_over.mk p P).1 = map (mapRingHom σ) P := rfl
 
-/-- The decomposition group of `P` over `K`, is the stabilizer of `primes_over.mk p P`
-  under the action `Gal_MulAction_primes`. -/
-def decompositionGroup : Subgroup (L ≃ₐ[K] L) := stabilizer _ (primes_over.mk p P)
+/-- Decomposition group of `P` over `K` is the stabilizer of `primes_over.mk p P`
+  under the action of `L ≃ₐ[K] L`. -/
+def decompositionGroup : Subgroup (L ≃ₐ[K] L) :=
+  stabilizer (L ≃ₐ[K] L) (primes_over.mk p P)
 
 /-- The `decompositionGroup` is consisting of all elements of the Galois group `L ≃ₐ[K] L` such
-that keep `P` invariant. -/
+  that keeping `P` invariant. -/
 theorem decompositionGroup_mem (σ : L ≃ₐ[K] L) :
     σ ∈ decompositionGroup p P ↔ map (mapRingHom σ) P = P := by
   rw [decompositionGroup, mem_stabilizer_iff, ← Subtype.val_inj, Gal_MulAction_primes_mk_coe]
@@ -559,7 +560,6 @@ private lemma ramificationIdx_and_inertiaDeg_of_decompositionIdeal [IsGalois K L
     ramificationIdx_of_isGalois (decompositionIdeal p P) L = ramificationIdx_of_isGalois p L ∧
     inertiaDeg_of_isGalois (decompositionIdeal p P) L = inertiaDeg_of_isGalois p L := by
   let Pz := idealUnder (decompositionField p P) P
-  let E := { x // x ∈ decompositionField p P }
   have h := ramificationIdx_mul_inertiaDeg_of_isGalois Pz L
   rw [primes_over_decompositionideal_card_eq_one p P, one_mul,
     finrank_over_decompositionField_eq_ramificationIdx_mul_inertiaDeg p P] at h

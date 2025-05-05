@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2024 Yongle Hu. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yongle Hu
+Authors: Yongle Hu, Yi Yuan
 -/
 import Mathlib.NumberTheory.NumberField.Basic
 
@@ -31,15 +31,38 @@ def Module.Finite.finiteOfFinite {R M : Type*} [CommRing R] [Finite R] [AddCommM
   sorry -/
 
 variable {R : Type*} [CommRing R] [h : Module.Finite ℤ R]
+variable {R : Type*} [CommRing R] [h : Module.Finite ℤ R]
 
-theorem Ideal.Quotient.finite_of_module_finite_int {I : Ideal R} (hp : I ≠ ⊥) : Finite (R ⧸ I) := sorry
+theorem Ideal.Quotient.finite_of_module_finite_int [IsDomain R]{I : Ideal R} (hp : I ≠ ⊥) :
+    Finite (R ⧸ I) := by
+  have : Module.Finite (ℤ ⧸ I.comap (algebraMap ℤ R)) (R ⧸ I) :=
+    Module.Finite.of_restrictScalars_finite ℤ (ℤ ⧸ I.comap (algebraMap ℤ R)) (R ⧸ I)
+  have : Finite (ℤ ⧸ I.comap (algebraMap ℤ R)) :=
+    have : I.comap (algebraMap ℤ R) ≠ ⊥ := by
+      obtain ⟨x, hx1, hx2⟩ : ∃ x : R ,x ∈ I ∧ x ≠ 0 :=
+        Set.not_subset.mp <| mt (Submodule.eq_bot_iff I).mpr hp
+      apply Ideal.comap_ne_bot_of_integral_mem hx2 hx1 <| Algebra.IsIntegral.isIntegral x
+    Int.Quotient.finite_of_ne_bot this
+  exact Module.finite_of_finite <| ℤ ⧸ comap (algebraMap ℤ R) I
 
--- `NoZeroSMulDivisors` can be removed
-instance Ideal.Quotient.finite_of_module_finite_int_of_isMaxiaml [NoZeroSMulDivisors ℤ R] [IsDomain R]
-    (p : Ideal R) [hpm : p.IsMaximal] : Finite (R ⧸ p) :=
-  Ideal.Quotient.finite_of_module_finite_int <| Ring.ne_bot_of_isMaximal_of_not_isField hpm <|
-    fun hf => Int.not_isField <|
-      (Algebra.IsIntegral.isField_iff_isField (NoZeroSMulDivisors.algebraMap_injective ℤ R)).mpr hf
+instance Ideal.Quotient.finite_of_module_finite_int_of_isMaxiaml
+    [IsDomain R] (p : Ideal R) [hpm : p.IsMaximal] : Finite (R ⧸ p) := by
+  by_cases hzr : Function.Injective (algebraMap ℤ R)
+  · exact Ideal.Quotient.finite_of_module_finite_int <| Ring.ne_bot_of_isMaximal_of_not_isField hpm
+      <| fun hf => Int.not_isField <| (Algebra.IsIntegral.isField_iff_isField <| hzr).mpr hf
+  · obtain ⟨x, y, eq, neq⟩ : ∃ x y , (algebraMap ℤ R) x = (algebraMap ℤ R) y ∧ x ≠ y :=
+      Function.not_injective_iff.mp hzr
+    have t0 : (algebraMap ℤ (R ⧸ p)) (x - y) = 0 := by
+      show (algebraMap R (R ⧸ p)) ((algebraMap ℤ R) (x - y)) = 0
+      rw [RingHom.map_sub (algebraMap ℤ R) x y, eq]
+      simp only [algebraMap_eq, algebraMap_int_eq, eq_intCast, sub_self, map_zero]
+    have : Algebra (ℤ ⧸ RingHom.ker (algebraMap ℤ (R ⧸ p))) (R ⧸ p) :=
+      (RingHom.kerLift <| algebraMap ℤ <| R ⧸ p).toAlgebra
+    have : Module.Finite (ℤ ⧸ RingHom.ker (algebraMap ℤ (R ⧸ p))) (R ⧸ p) := by
+      apply Module.Finite.of_restrictScalars_finite ℤ
+    have : Finite (ℤ ⧸ RingHom.ker (algebraMap ℤ (R ⧸ p))) :=
+      Int.Quotient.finite_of_ne_bot <| ne_of_mem_of_not_mem' t0 <| sub_ne_zero_of_ne neq
+    exact Module.finite_of_finite (ℤ ⧸ RingHom.ker (algebraMap ℤ (R ⧸ p)))
 
 end
 
